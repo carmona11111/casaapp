@@ -1,0 +1,12 @@
+node_modules/
+dist/
+data/
+.env
+.env.*
+!.env.example
+.agents/
+.codex/
+public/CasaApp.txt
+test-results/
+playwright-report/
+*.log

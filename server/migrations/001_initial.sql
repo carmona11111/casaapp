@@ -1,0 +1,14 @@
+PRAGMA foreign_keys=ON;
+CREATE TABLE IF NOT EXISTS migrations (version INTEGER PRIMARY KEY);
+CREATE TABLE IF NOT EXISTS household (id TEXT PRIMARY KEY, name TEXT NOT NULL, timezone TEXT NOT NULL, base_date TEXT NOT NULL, rotation INTEGER NOT NULL DEFAULT 1, revision INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS people (id TEXT PRIMARY KEY, household_id TEXT NOT NULL REFERENCES household(id), name TEXT NOT NULL, color TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS zones (id TEXT PRIMARY KEY, household_id TEXT NOT NULL REFERENCES household(id), name TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS templates (id TEXT PRIMARY KEY, household_id TEXT NOT NULL REFERENCES household(id), title TEXT NOT NULL, steps TEXT NOT NULL, zone_id TEXT NOT NULL REFERENCES zones(id), minutes INTEGER NOT NULL, recurrence TEXT NOT NULL, block TEXT NOT NULL, person_id TEXT REFERENCES people(id), effective_date TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, pet INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS occurrences (id TEXT PRIMARY KEY, template_id TEXT NOT NULL REFERENCES templates(id), household_id TEXT NOT NULL REFERENCES household(id), original_date TEXT NOT NULL, scheduled_date TEXT NOT NULL, original_person TEXT NOT NULL REFERENCES people(id), current_person TEXT NOT NULL REFERENCES people(id), status TEXT NOT NULL DEFAULT 'open', version INTEGER NOT NULL DEFAULT 1, snapshot TEXT NOT NULL, completed_by TEXT REFERENCES people(id), completed_at TEXT, covered_by TEXT, UNIQUE(template_id, original_date));
+CREATE INDEX IF NOT EXISTS occurrences_dates ON occurrences(scheduled_date,status);
+CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, occurrence_id TEXT REFERENCES occurrences(id), action TEXT NOT NULL, actor TEXT NOT NULL REFERENCES people(id), at TEXT NOT NULL, changes TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS absences (id TEXT PRIMARY KEY, person_id TEXT NOT NULL REFERENCES people(id), start TEXT NOT NULL, end TEXT NOT NULL, confirmed INTEGER NOT NULL DEFAULT 0, exceptions TEXT NOT NULL DEFAULT '[]');
+CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, expires INTEGER NOT NULL, password_fingerprint TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS requests (id TEXT PRIMARY KEY, response TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS login_attempts (ip TEXT PRIMARY KEY, attempts INTEGER NOT NULL, reset_at INTEGER NOT NULL);
+INSERT OR IGNORE INTO migrations VALUES (1);

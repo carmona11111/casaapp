@@ -1,0 +1,4 @@
+{$CASA_DOMAIN} {
+  encode gzip
+  reverse_proxy casa:4310
+}

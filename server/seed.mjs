@@ -1,0 +1,41 @@
+import { applyBalancedPlan } from './household-plan.mjs';
+
+export function seed(db) {
+ if (db.prepare('SELECT id FROM household').get()) return;
+ db.prepare('INSERT INTO household VALUES (?,?,?,?,?,?)').run('home','Casa al día','Europe/Madrid','2026-10-12',1,1);
+ db.prepare('INSERT INTO people VALUES (?,?,?,?,?)').run('ivan','home','Iván','#386955',1);
+ db.prepare('INSERT INTO people VALUES (?,?,?,?,?)').run('person2','home','Irene','#a36649',1);
+ const zones = ['Cocina','Salón y comedor','Habitación 1','Habitación 2','Habitación 3','Baño 1','Baño 2','Toda la casa','Lavandería','Pasillo'];
+ zones.forEach((name,i)=>db.prepare('INSERT INTO zones VALUES (?,?,?)').run('z'+i,'home',name));
+ let n=0;
+ const add=(title,zone,minutes,block,day,steps,extra={})=>db.prepare('INSERT INTO templates VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run('t'+(++n),'home',title,JSON.stringify(steps), 'z'+zone,minutes,JSON.stringify(day === null ? {kind:'daily'} : {kind:'weekly',day,interval:1,offset:0,...extra.recurrence}),block,null,'2026-10-12',extra.pet ? 0:1,extra.pet ? 1:0);
+ add('Gestionar platos o lavavajillas',0,10,'A',null,['Recoger los platos.','Lavar a mano o cargar el lavavajillas.','Guardar los utensilios limpios.']);
+ add('Limpiar encimera y repasar placa',0,5,'A',null,['Retirar migas y restos.','Pasar una bayeta por la encimera y la placa fría.']);
+ add('Recoger salón y objetos fuera de sitio',1,8,'B',null,['Devolver cada objeto a su sitio.','Ordenar cojines y mantas.']);
+ add('Limpiar mesa del comedor',1,3,'B',null,['Despejar la mesa.','Limpiar la superficie.']);
+ add('Revisar basura',0,5,'B',null,['Revisar los cubos.','Sacar la basura si hace falta y reponer las bolsas.']);
+ for (const [zone,block] of [[5,'A'],[6,'B']]) add('Limpiar '+zones[zone].toLowerCase(),zone,25,block,0,['Limpiar lavabo y grifos.','Limpiar WC.','Limpiar ducha o bañera.','Repasar espejo.','Limpiar el suelo.']);
+ add('Cambiar toallas de ambos baños',8,5,'B',0,['Retirar las toallas usadas.','Poner toallas limpias en ambos baños.']);
+ for(const [zone,block] of [[2,'A'],[3,'A'],[4,'B']]) add('Quitar polvo y aspirar '+zones[zone].toLowerCase(),zone,15,block,1,['Despejar superficies.','Quitar el polvo de arriba abajo.','Aspirar el suelo y debajo de la cama.']);
+ add('Lavar ropa',8,10,'B',1,['Separar la ropa.','Poner la lavadora con el programa adecuado.']);
+ add('Tender o secar ropa',8,10,'B',1,['Sacar la ropa de la lavadora.','Tender o usar la secadora.']);
+ add('Quitar polvo en salón y comedor',1,15,'A',2,['Despejar superficies.','Quitar el polvo de muebles y estantes.']);
+ add('Aspirar sofá',1,10,'A',2,['Retirar cojines.','Aspirar asientos, respaldo y rincones.']);
+ add('Aspirar y fregar zonas comunes',1,25,'B',2,['Aspirar salón, comedor y pasillo.','Fregar los suelos.']);
+ add('Limpiar la cocina a fondo',0,25,'A',3,['Limpiar fregadero y placa.','Limpiar salpicadero.','Repasar el exterior de los electrodomésticos.']);
+ add('Revisar alimentos de la nevera',0,8,'B',3,['Revisar fechas y estado.','Organizar lo que conviene consumir primero.']);
+ add('Repasar frentes y suelo de cocina',0,15,'B',3,['Limpiar frentes manchados.','Aspirar y fregar el suelo.']);
+ add('Aspirar y fregar habitaciones',7,25,'A',4,['Aspirar las tres habitaciones.','Fregar y dejar secar.']);
+ add('Repasar lavabos y WC',7,15,'B',4,['Repasar lavabos y grifos de ambos baños.','Limpiar ambos WC.']);
+ add('Doblar y guardar ropa',8,15,'B',4,['Doblar la ropa seca.','Guardar en armarios y cajones.']);
+ add('Cambiar sábanas de camas utilizadas',7,10,'A',5,['Retirar las sábanas usadas.','Hacer las camas con sábanas limpias.']);
+ add('Lavar sábanas',8,5,'A',5,['Poner la lavadora con las sábanas usadas.']);
+ add('Tender o secar sábanas',8,10,'B',5,['Sacar las sábanas de la lavadora.','Tender o usar la secadora.']);
+ add('Recoger zonas comunes',1,10,'B',5,['Guardar objetos fuera de sitio.','Dejar despejadas las zonas compartidas.']);
+ const extras=[['Limpiar cristales de una zona',20,['Limpiar cristales y marcos.','Secar sin dejar marcas.']],['Limpiar microondas y repasar horno',20,['Limpiar el interior del microondas.','Repasar el horno frío.']],['Limpiar nevera por dentro',30,['Vaciar por secciones.','Limpiar baldas y cajones.','Volver a colocar los alimentos.']],['Limpiar puertas, interruptores y rodapiés',20,['Repasar puertas y tiradores.','Limpiar interruptores con paño apenas húmedo.','Repasar rodapiés.']]];
+ extras.forEach(([title,min,steps],i)=>add(title,i===1||i===2 ? 0 : 7,min,'A',5,steps,{recurrence:{interval:4,offset:i,zoneRotation:i===0||i===3 ? ['z1','z2','z3','z4'] : []}}));
+ add('Retirar residuos del arenero',7,5,'A',null,['Retirar residuos.','Revisar la arena.'],{pet:true});
+ add('Revisar agua de mascotas',0,3,'B',null,['Lavar el recipiente.','Renovar el agua.'],{pet:true});
+ add('Aspirar pelos de mascotas',1,10,'B',2,['Aspirar las zonas donde descansan.'],{pet:true});
+ applyBalancedPlan(db);
+}

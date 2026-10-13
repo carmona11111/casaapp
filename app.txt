@@ -1,0 +1,165 @@
+INSTRUCCIONES PARA CODEX — CASA AL DÍA
+Construye una aplicación web funcional de limpieza doméstica para dos personas, accesible mediante una etiqueta NFC en la nevera. Implementa el proyecto, no te limites a explicar una propuesta.
+
+1. CONTEXTO Y OBJETIVO
+Casa: salón-comedor con cocina, tres habitaciones y dos baños.
+Usuarios iniciales: Iván y Persona 2, ambos renombrables.
+Idioma: español. Zona horaria: Europe/Madrid.
+Objetivo: abrir desde NFC, elegir persona, ver tareas de hoy, completarlas y sincronizar el estado entre dos móviles.
+No requiere IA, suscripciones ni conexión directa con el chip NFC.
+
+2. FORMA DE TRABAJAR
+Inspecciona primero el repositorio y sus instrucciones. Si existe una app, integra esta funcionalidad respetando su stack. Si es un proyecto nuevo, utiliza React con TypeScript y un backend ligero con base de datos SQL persistente; elige una solución compatible con el hosting disponible.
+Evita depender exclusivamente de localStorage: ambos móviles deben compartir los datos.
+Si no hay infraestructura remota configurada, implementa y prueba frontend y backend localmente; entrega instrucciones exactas de despliegue y variables pendientes. No simules sincronización ni inventes una URL publicada.
+Entrega código, migraciones, datos iniciales, pruebas relevantes y README. No publiques externamente sin autorización.
+
+3. ACCESO DESDE NFC
+Define una URL estable /entrada que abra siempre la selección de persona, incluso si hay un perfil recordado.
+El NFC contiene únicamente esa URL HTTPS como registro NDEF URI.
+Abrir la URL manualmente debe producir el mismo resultado.
+La app no debe intentar leer ni escribir NFC mediante el navegador.
+En Ajustes muestra la URL real configurada, un botón para copiarla y un QR generado a partir de ella.
+Incluye instrucciones para grabar la URL con una app de escritura NFC y comprobarla antes de bloquear la etiqueta. No bloquees ninguna etiqueta automáticamente.
+Recomienda etiqueta on-metal para pegarla sobre la nevera.
+Explica que el móvil puede mostrar una notificación que el usuario debe tocar para abrir la web; no prometas apertura automática.
+
+4. ACCESO A LA CASA E IDENTIFICACIÓN
+Protege los datos con una sesión de hogar compartido. Implementa una contraseña de hogar configurada en servidor, almacenada con hash, límites de intentos y cookie de sesión HttpOnly, Secure en producción y SameSite.
+No incluyas credenciales predeterminadas públicas, secretos en frontend o tokens de sesión en la URL del NFC.
+Ambos usuarios autorizados pueden ver y editar el mismo hogar.
+Seleccionar Iván o Persona 2 atribuye la actividad; no constituye autenticación individual.
+Guarda la preferencia de perfil solo para accesos normales; /entrada siempre pregunta quién eres.
+Documenta cómo cambiar la contraseña y cerrar sesiones.
+
+5. PANTALLAS
+A. Entrada: “¿Quién eres?” y dos botones grandes con nombre, avatar sencillo y color.
+B. Hoy: saludo, fecha local, progreso, tareas diarias, tareas del día y pendientes separados.
+C. Semana: lunes a domingo con responsable y estado; permitir ver semanas anteriores.
+D. Ajustes: personas, zonas, tareas, frecuencias, rotación, ausencias, QR y exportación/importación.
+Incluye una vista compartida y un historial accesibles desde Hoy o Semana.
+
+Diseño móvil prioritario, elegante y doméstico: fondo claro, tarjetas legibles, un color por persona, botones táctiles de al menos 44 px, contraste accesible y estados que no dependan solo del color.
+No uses rankings ni penalizaciones.
+En Hoy cada tarjeta muestra título, zona, tiempo estimado, responsable y acciones.
+Detalles desplegables muestran los pasos. Basta un botón para completar la tarea entera.
+
+6. PLAN INICIAL
+Define bloques A y B. En la semana base A corresponde a Iván y B a Persona 2.
+Fecha base configurable: lunes 12/10/2026. Cada semana posterior o anterior alterna A y B mediante diferencia entera de semanas, sin depender del número ISO par/impar.
+Cada lunes rota tanto el reparto semanal como el diario.
+
+DIARIAS:
+Bloque A:
+- Gestionar platos o lavavajillas.
+- Limpiar encimera y repasar placa.
+Bloque B:
+- Recoger salón y objetos fuera de sitio.
+- Limpiar mesa del comedor.
+- Revisar basura y sacarla si hace falta.
+Ventilar, hacer la cama y recoger lo que uno ensucia figuran como recordatorio opcional sin casillas obligatorias.
+
+LUNES:
+A: limpiar baño 1.
+B: limpiar baño 2 y cambiar toallas de ambos baños.
+Cada baño incluye lavabo, grifos, WC, ducha/bañera, espejo y suelo.
+
+MARTES:
+A: quitar polvo y aspirar habitaciones 1 y 2.
+B: quitar polvo y aspirar habitación 3; lavar ropa y tender o secar.
+
+MIÉRCOLES:
+A: quitar polvo en salón y comedor; aspirar sofá.
+B: aspirar y fregar salón, comedor y pasillo.
+
+JUEVES:
+A: limpiar fregadero, placa, salpicadero y exterior de electrodomésticos.
+B: revisar alimentos de nevera, repasar frentes manchados y limpiar suelo de cocina.
+
+VIERNES:
+A: aspirar y fregar habitaciones.
+B: repasar lavabos y WC; doblar y guardar ropa.
+
+SÁBADO:
+A: cambiar y lavar sábanas de camas utilizadas.
+B: tender o secar sábanas; recoger zonas comunes.
+Añadir una tarea extra alternando responsable cada semana:
+Semana 1: cristales de una zona.
+Semana 2: microondas por dentro y repaso de horno.
+Semana 3: nevera por dentro.
+Semana 4: puertas, interruptores y rodapiés de una zona.
+Repetir ciclo de cuatro semanas. Permitir elegir y rotar zonas con una lista editable.
+
+DOMINGO:
+Solo mantenimiento diario.
+
+Usa tareas separadas para acciones que puedan completarse en momentos diferentes; por ejemplo lavar y tender. Asigna tiempos orientativos editables por tarea, sin afirmar una duración diaria fija.
+Permite convertir la limpieza de una habitación a frecuencia quincenal.
+Tareas de mascotas desactivadas por defecto: retirar residuos de arenero a diario, revisar agua y aspirado adicional de pelos. Deben poder activarse desde Ajustes.
+
+7. ACCIONES Y REGLAS
+- Hecho: guardar persona que completa y fecha/hora confirmada por servidor.
+- Deshacer: revertir y registrar el evento.
+- La hago yo: asumir la tarea y después completarla; conserva el responsable original en historial.
+- Mover: elegir fecha nueva, conservando fecha original.
+- No necesaria: omitir solo esta ocasión, con motivo opcional; no cuenta como realizada.
+- Ausencia: indicar intervalo y proponer reasignación; no cargar automáticamente todas las tareas al otro sin confirmación.
+- Pendientes: mostrar las abiertas de fechas anteriores.
+- No borrar completados al comenzar un día o semana.
+- Al llegar otra repetición de una tarea ya pendiente, mostrar una tarjeta agrupada por tarea, con número de ocasiones y fechas. Al completarla, cerrar explícitamente las ocasiones anteriores como “cubiertas por limpieza posterior”, sin contabilizarlas como varias limpiezas realizadas.
+- Si se ha pospuesto una tarea, no duplicarla al generar nuevas ocurrencias.
+- Modificar un plan afecta a futuras ocurrencias abiertas; conserva las completadas y su descripción histórica. Solicita alcance para modificar una ocurrencia concreta o todas las futuras.
+- El progreso muestra realizadas, pendientes y omitidas diferenciadas. Si todas están omitidas, mostrar “Sin tareas activas”, no 100 % realizadas.
+- El reparto se calcula desde reglas y excepciones persistidas, no desde el móvil que abra primero la app.
+
+8. DATOS Y SINCRONIZACIÓN
+Modelo mínimo:
+Hogar: ID, nombre, zona horaria, fecha base, configuración de rotación.
+Persona: ID, hogar, nombre, color, activa.
+Zona: ID, hogar, nombre.
+Plantilla de tarea: ID, título, pasos, zona, minutos estimados, recurrencia, bloque o responsable fijo, fecha de vigencia, activa.
+Ocurrencia: ID, plantilla, hogar, fecha original, fecha programada, responsable original, responsable actual, estado, versión y snapshot de título/pasos.
+Evento: ID, ocurrencia, acción, actor, fecha de servidor y cambios.
+Ausencia: persona, inicio, fin y excepciones confirmadas.
+
+Generación idempotente con restricción única por plantilla y fecha original. Generar el intervalo requerido al consultar, sin depender de que alguien abra cada día.
+Fechas domésticas YYYY-MM-DD en Madrid; timestamps de actividad en UTC.
+Cálculo correcto de cambio de día, lunes, cambio de año y horario de verano.
+Actualizar al recuperar foco y mediante suscripción o polling ligero mientras la app está visible.
+Para cambios simultáneos utiliza versión o transacción: evita dobles completados y sobrescritura silenciosa.
+Un reintento de la misma petición debe ser idempotente.
+Mostrar guardando, guardado y error. No presentar como sincronizado un cambio no confirmado.
+Sin conexión: permitir consultar el último estado en caché, mostrar aviso y desactivar escrituras en la primera versión. No afirmar que se guardaron tareas.
+No guardar secretos ni sesiones en la caché del service worker.
+
+9. PWA, HISTORIAL Y PORTABILIDAD
+Incluye manifest e iconos sencillos para añadir a pantalla de inicio.
+La instalación y el NFC son accesos alternativos.
+Historial: filtrar por persona, tarea, zona y fechas.
+Resumen semanal: tareas realmente hechas y minutos estimados, claramente identificados como estimaciones. Las tareas cubiertas por una limpieza posterior no suman actividad.
+Exportar JSON versionado con plan, personas, zonas e historial, excluyendo secretos y sesiones.
+Importar mediante validación de esquema, vista previa y confirmación. No sobreescribir datos sin mostrar el alcance.
+No implementes notificaciones push en el MVP. Déjalas como mejora opcional futura, sin pedir permisos ahora.
+
+10. VALIDACIÓN
+Prueba:
+- Alternancia A/B en semanas consecutivas y cambio de año.
+- Fecha local Madrid alrededor de medianoche y cambios de horario.
+- Generación idempotente de ocurrencias.
+- Hecho, deshacer, mover, omitir y asumir tarea.
+- Agrupación de pendientes sin inflar el historial.
+- Persistencia tras recargar y cerrar el navegador.
+- Dos sesiones/móviles comparten completados y resuelven conflictos.
+- Cambiar una plantilla no altera tareas históricas completadas.
+- Sin conexión y errores no producen falsos guardados.
+- /entrada pregunta la persona cada vez.
+- Una sesión no autorizada no puede leer ni modificar datos.
+- Pantallas móviles sin desbordamientos y controles accesibles.
+
+11. ENTREGA
+Entrega una aplicación operativa y comprueba el flujo completo:
+abrir /entrada → iniciar sesión de hogar si hace falta → elegir persona → consultar hoy → completar → verificar desde otra sesión.
+Incluye README con arranque local, persistencia y copias de seguridad, variables de entorno, creación de contraseña, despliegue HTTPS y configuración de NFC/QR.
+Si el hosting no está disponible, indica exactamente qué falta para conectar los dos móviles. No confundas una demo local con una aplicación compartida publicada.
+Finaliza con un resumen de lo implementado, pruebas realizadas y pasos pendientes reales.
+

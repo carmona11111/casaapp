@@ -1,0 +1,30 @@
+services:
+  casa:
+    build: ..
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4310
+      DATABASE_PATH: /app/data/casa.sqlite
+    volumes:
+      - casa_data:/app/data
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      CASA_DOMAIN: ${CASA_DOMAIN:?Configura CASA_DOMAIN en .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - casa
+volumes:
+  casa_data:
+  caddy_data:
+  caddy_config:
