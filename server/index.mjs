@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { detectLanAddresses, developmentUrl } from './network.mjs';
+import {runtimeConfig} from './runtime.mjs';
 import {existsSync,statSync,createReadStream} from 'node:fs';
 import {resolve,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -9,14 +9,8 @@ import {localDate,addDays,validDate} from './dates.mjs';
 const digest=value=>createHash('sha256').update(value).digest('hex');
 import {config,mutation,absence,backup,checkPlan,checkBackup} from './schema.mjs';
 const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
-const production=process.env.NODE_ENV==='production';
-const port=Number(process.env.PORT||4310);const host=process.env.HOST||'127.0.0.1';
-const localAddresses = !production && ['0.0.0.0','::'].includes(host) ? detectLanAddresses() : [];
-const publicUrl=(process.env.PUBLIC_URL||developmentUrl(host,port,localAddresses)).replace(/\/$/,'');
-const configuredUrl=new URL(publicUrl);
-if(!['http:','https:'].includes(configuredUrl.protocol)||configuredUrl.pathname!=='/'||configuredUrl.search||configuredUrl.hash||configuredUrl.username||configuredUrl.password)throw new Error('PUBLIC_URL debe ser un origen HTTP(S), sin ruta, parámetros ni credenciales.');
-if(production&&!process.env.PUBLIC_URL?.startsWith('https://'))throw new Error('Producción requiere PUBLIC_URL con HTTPS.');
-const db=openStore(process.env.DATABASE_PATH||resolve(root,'data/casa.sqlite'));
+const {production,port,host,localAddresses,publicUrl,databasePath}=runtimeConfig(process.env,root);
+const db=openStore(databasePath);
 let vite;
 if(!production&&process.env.SERVE_BUILD!=='1'){const {createServer}=await import('vite');vite=await createServer({root,server:{middlewareMode:true},appType:'spa'});}
 function send(res,status,data,headers={}){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers});res.end(JSON.stringify(data));}

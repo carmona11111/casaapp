@@ -1,0 +1,20 @@
+# Blueprint para probar la app en el plan gratuito de Render.
+# SQLite es temporal: sus datos se pierden al reiniciar o redesplegar.
+# En servicios creados manualmente, cambia DATABASE_PATH en Environment.
+services:
+  - type: web
+    name: casaapp
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /entrada
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_PATH
+        value: ./data/casa.sqlite

@@ -5,8 +5,14 @@ import { randomUUID } from 'node:crypto';
 import { seed } from './seed.mjs';
 import { addDays, matches, mod, responsible, weekOffset } from './dates.mjs';
 export function openStore(path) {
- mkdirSync(dirname(path),{recursive:true});
- const db=new DatabaseSync(path); db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;');
+ let db;
+ try {
+  mkdirSync(dirname(path),{recursive:true});
+  db=new DatabaseSync(path);
+ } catch(cause) {
+  throw new Error(`No se puede abrir SQLite en ${path}. Comprueba DATABASE_PATH y los permisos de su carpeta. En Render, /var/data requiere un disco persistente montado en /var/data (Disks > Add Disk, servicio de pago). Para una prueba temporal sin disco, configura DATABASE_PATH=./data/casa.sqlite; esos datos se pierden al reiniciar o desplegar. No se ha cambiado automáticamente de base de datos.`,{cause});
+ }
+ db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;');
  db.exec(readFileSync(new URL('./migrations/001_initial.sql',import.meta.url),'utf8')); transaction(db,()=>seed(db)); return db;
 }
 export function transaction(db,fn){ db.exec('BEGIN IMMEDIATE'); try {const result=fn();db.exec('COMMIT');return result;}catch(e){db.exec('ROLLBACK');throw e;} }

@@ -110,7 +110,7 @@ Se mantienen la validación del origen de las escrituras del navegador, las cabe
 | `SERVE_BUILD` | `1` para probar el build sin Vite | No hace falta |
 | `CASA_DOMAIN` | No se usa | Dominio real, solo para Docker/Caddy |
 
-`.env.example` sirve de referencia; `.env` nunca se sube al repositorio. Producción requiere `PUBLIC_URL` HTTPS. `HOUSEHOLD_PASSWORD_HASH`, si quedó en un `.env` anterior, ya no se utiliza.
+`.env.example` sirve de referencia; `.env` nunca se sube al repositorio. Producción requiere una URL HTTPS: `PUBLIC_URL` o, en Render, su variable automática `RENDER_EXTERNAL_URL`. `HOUSEHOLD_PASSWORD_HASH`, si quedó en un `.env` anterior, ya no se utiliza.
 
 ## Despliegue en Render
 
@@ -126,19 +126,25 @@ Configura estos campos:
 | Health Check Path | `/entrada` |
 | Instancias | Una |
 
-Variables de entorno:
+Para el **plan gratuito**, configura estas variables de entorno:
 
 | Variable | Valor |
 | --- | --- |
 | `NODE_VERSION` | `24` |
 | `NODE_ENV` | `production` |
 | `HOST` | `0.0.0.0` |
-| `DATABASE_PATH` | `/var/data/casa.sqlite` |
-| `PUBLIC_URL` | La URL HTTPS exacta asignada al servicio, por ejemplo `https://casaapp-xxxx.onrender.com`, sin ruta ni barra final |
+| `DATABASE_PATH` | `./data/casa.sqlite` (almacenamiento temporal) |
+| `PUBLIC_URL` | Opcional: omítela para usar automáticamente la URL `onrender.com` asignada por Render |
 
-Render establece `PORT` automáticamente; la app lo utiliza. No copies el `.env` local ni añadas el token de GitHub como variable de la app. Si la URL definitiva se conoce después de crear el servicio, actualiza `PUBLIC_URL` con ella y vuelve a desplegar.
+Render establece `PORT` y `RENDER_EXTERNAL_URL` automáticamente; la app los utiliza. No copies el `.env` local ni añadas el token de GitHub como variable de la app. Si tienes un dominio propio, configura `PUBLIC_URL` con su origen HTTPS exacto, sin ruta ni barra final. Un `PUBLIC_URL` antiguo o incorrecto debe eliminarse o corregirse porque tiene prioridad sobre la detección automática.
 
-Añade un **disco persistente de 1 GB**, con Mount Path **`/var/data`**, antes de utilizar la app. Requiere un servicio de pago compatible con discos: el servicio gratuito no conserva SQLite entre reinicios o despliegues. El disco y el servicio tienen coste; consulta el importe que muestra Render antes de crearlos.
+El archivo `render.yaml` permite crear un servicio gratuito desde **New > Blueprint**. Para un servicio ya creado manualmente, un push no actualiza sus variables: cambia `DATABASE_PATH` en **Environment**, guarda y utiliza **Manual Deploy > Deploy latest commit** si no se despliega automáticamente.
+
+**Error `mkdir /var/data`:** esa ruta requiere un disco montado. El plan gratuito no admite discos persistentes. Cambia `DATABASE_PATH=/var/data/casa.sqlite` por `DATABASE_PATH=./data/casa.sqlite` para arrancar con almacenamiento temporal. No añadas `mkdir /var/data` al comando de build ni de arranque.
+
+**Límite del plan gratuito:** los datos de SQLite se pierden al reiniciar o redesplegar, también cuando se reinicia una instancia tras una suspensión. Este modo sirve para probar la aplicación; no garantiza conservar las tareas completadas. Exporta JSON desde Ajustes para guardar una copia fuera de Render.
+
+Para conservar el historial de forma duradera con la implementación actual, utiliza un servicio de pago y añade un **disco persistente de 1 GB**, con Mount Path **`/var/data`**, en **Disks > Add Disk**; después establece `DATABASE_PATH=/var/data/casa.sqlite`. El disco solo está disponible al ejecutar el servicio, no durante build o pre-deploy. El disco y el servicio tienen coste; consulta el importe que muestra Render antes de crearlos. Otra opción requiere adaptar la app a una base de datos externa: la versión actual utiliza SQLite local y no acepta una URL de PostgreSQL.
 
 La primera instalación inicia el plan de Iván e Irene, pero el historial de la instalación local no se sube a GitHub. Para trasladarlo, exporta JSON desde Ajustes en la app local e impórtalo desde Ajustes en Render. Desde ese momento, usad ambos la misma URL de Render: la base local y la remota son independientes.
 
@@ -209,7 +215,7 @@ npm run build
 npm test
 ```
 
-La compilación TypeScript/Vite y **25 pruebas automatizadas** pasan. Cubren rotación, cambio de año, Madrid/horario de verano, recurrencias, generación idempotente, acciones, conflictos, agrupación sin inflar actividad, movimiento antes/después de generar semana, snapshots, persistencia tras cerrar SQLite, dos clientes sin cookies, validación de origen, idempotencia, ausencias, importación/exportación, acceso LAN, retirada de las rutas de login, asignaciones fijas, carga equilibrada durante cuatro semanas y registro único del salón sin completar otras zonas.
+La compilación TypeScript/Vite y **28 pruebas automatizadas** pasan. Cubren rotación, cambio de año, Madrid/horario de verano, recurrencias, generación idempotente, acciones, conflictos, agrupación sin inflar actividad, movimiento antes/después de generar semana, snapshots, persistencia tras cerrar SQLite, dos clientes sin cookies, validación de origen, idempotencia, ausencias, importación/exportación, acceso LAN, retirada de las rutas de login, asignaciones fijas, carga equilibrada durante cuatro semanas y registro único del salón sin completar otras zonas.
 
 Las pruebas de API ejecutan el manejador HTTP real con streams en memoria y SQLite temporal: no sustituyen el servidor por respuestas inventadas. Se ha verificado el arranque en segundo plano mediante `npm run serve` y su continuidad mediante `npm run serve -- status`, con respuestas HTTP 200 reales de `/entrada` y `/api/state`. La verificación con navegador y móviles reales queda pendiente. No hay despliegue público.
 
