@@ -83,11 +83,11 @@ La aplicación no tiene contraseñas: cualquier persona con acceso a su direcci�
 
 ## Despliegue
 
-El proyecto incluye `Dockerfile`, configuración de Caddy en `deploy/` y `render.yaml`. En producción, sirve la app con `npm start` y configura `PUBLIC_URL` con el origen HTTPS real. SQLite está diseñado aquí para una sola instancia del servidor.
+El proyecto incluye `Dockerfile`, configuración de Caddy en `deploy/` y `render.yaml`. En producción, sirve la app con `npm start`, conserva `DATABASE_PATH` en un volumen persistente y configura `PUBLIC_URL` con el origen HTTPS real. SQLite está diseñado aquí para una sola instancia del servidor.
 
-**Fase temporal:** `render.yaml` usa el plan gratuito sin disco para permitir el primer despliegue. Si `DATABASE_PATH` no está configurada, SQLite se crea en `data/casa.sqlite` dentro del servicio. Esta carpeta es temporal en Render: los cambios de ambos perfiles pueden desaparecer tras un reinicio o despliegue. El control de salud `/api/health` comprueba que la base se abre, pero no que exista un disco persistente. No uses esta fase para guardar datos que necesites conservar sin descargar antes una copia desde `/api/export`.
+En Render, el servicio usa el plan `starter` con un disco de 1 GB montado en `/var/data`; `DATABASE_PATH` debe valer `/var/data/casa.sqlite` también en el panel si el servicio se creó manualmente. El arranque rechaza rutas ausentes o fuera de `/var/data` para evitar guardar puntos y tareas en el almacenamiento temporal. El control `/api/health` comprueba que SQLite se abre; para comprobar que el disco conserva datos, registra una acción desde cada perfil y verifica el resultado tras reiniciar el servicio.
 
-**Fase definitiva:** cambia el servicio al plan `starter`, añade un disco de 1 GB montado en `/var/data` y configura `DATABASE_PATH=/var/data/casa.sqlite` en el panel. Actualiza también `render.yaml` con ese plan, disco y variable, y vuelve a activar la validación de la ruta en `server/runtime.mjs`. Antes del cambio descarga `/api/export`; después importa esa copia desde la app, ya que Render no traslada automáticamente el archivo SQLite temporal al disco. Comprueba la persistencia con los dos perfiles y un reinicio del servicio.
+Si tienes datos de la fase temporal sin disco, descarga antes `/api/export` y, después de activar la ruta persistente, importa la copia desde la app. Render no traslada automáticamente el archivo SQLite temporal al disco.
 
 ## Comprobación
 
