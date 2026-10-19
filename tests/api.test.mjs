@@ -277,3 +277,37 @@ test('El objetivo mensual y el acuerdo de reparto son compartidos y restaurables
  assert.equal((await request('/api/import',{method:'POST',data:{data:copy,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}})).status,200);
  assert.equal((await request('/api/coop')).data.keys.balance,state.keys.balance);
 });
+
+test('Ingresos, gastos repartidos y pagos conservan el saldo entre perfiles y en copias',async()=>{
+ const today=localDate(),month=today.slice(0,7);
+ const income={actor:'ivan',kind:'income',amount_cents:200000,title:'Nómina',category:'Nómina',occurred_on:today,paid_by:'ivan',other_person_id:null,shares:[]};
+ assert.equal((await request('/api/finance/add',{method:'POST',data:income})).status,200);
+ const expense={actor:'ivan',kind:'expense',amount_cents:10001,title:'Compra semanal',category:'Supermercado',occurred_on:today,paid_by:'ivan',other_person_id:null,shares:[{person_id:'ivan',amount_cents:5001},{person_id:'person2',amount_cents:5000}]};
+ assert.equal((await request('/api/finance/add',{method:'POST',data:{...expense,shares:[{person_id:'ivan',amount_cents:5000},{person_id:'person2',amount_cents:5000}]}})).status,400);
+ const key=randomUUID();
+ assert.equal((await request('/api/finance/add',{method:'POST',data:expense,key})).status,200);
+ assert.equal((await request('/api/finance/add',{method:'POST',data:expense,key})).status,200);
+ let state=(await request(`/api/finance?month=${month}`)).data;
+ assert.equal(state.income_cents,200000);
+ assert.equal(state.expense_cents,10001);
+ assert.equal(state.balances.ivan,5000);
+ assert.equal(state.balances.person2,-5000);
+ assert.equal(state.entries.length,2);
+ assert.equal((await request('/api/finance/delete',{method:'POST',data:{actor:'person2',id:state.entries.find(x=>x.kind==='expense').id}})).status,409);
+ const settlement={actor:'person2',kind:'settlement',amount_cents:3000,title:'Pago entre perfiles',category:'Ajuste',occurred_on:today,paid_by:'person2',other_person_id:'ivan',shares:[]};
+ assert.equal((await request('/api/finance/add',{method:'POST',data:{...settlement,amount_cents:6000}})).status,409);
+ assert.equal((await request('/api/finance/add',{method:'POST',data:settlement})).status,200);
+ state=(await request(`/api/finance?month=${month}`)).data;
+ assert.equal(state.balances.ivan,2000);
+ assert.equal(state.balances.person2,-2000);
+ const copy=(await request('/api/export')).data;
+ assert.equal(copy.financeData.length,3);
+ const preview=await request('/api/import/preview',{method:'POST',data:copy});
+ assert.equal(preview.status,200,JSON.stringify(preview.data));
+ assert.equal((await request('/api/import',{method:'POST',data:{data:copy,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}})).status,200);
+ state=(await request(`/api/finance?month=${month}`)).data;
+ assert.equal(state.balances.ivan,2000);
+ assert.equal(state.entries.length,3);
+ const legacy=structuredClone(copy);delete legacy.financeData;
+ assert.equal((await request('/api/import/preview',{method:'POST',data:legacy})).status,200);
+});

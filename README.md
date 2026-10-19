@@ -57,9 +57,13 @@ El plan semanal permite elegir una receta para la **comida y la cena** de cada d
 
 La compra ofrece búsqueda y filtros de pendientes o todos los productos. Usa dos columnas en escritorio y una en pantallas estrechas, con casillas grandes para marcar desde el móvil.
 
-## Ahorro y objetivos
+## Economía, gastos y ahorro
 
-La sección **Ahorro y objetivos** muestra tres hitos compartidos: **1.000 € Viaje express**, **3.000 € Disney París** y **10.000 € Disney worldwide**. Los objetivos avanzan solo con movimientos de dinero registrados por los usuarios; también se pueden registrar retiradas. La pantalla distingue ese saldo de la estimación de pedidos evitados y muestra el historial de aportaciones.
+La sección **Economía y ahorro** reúne cuatro vistas: resumen mensual, ingresos, gastos y objetivos de ahorro. Los ingresos y gastos se registran con importe, fecha y categoría. Un gasto puede repartirse a medias, cargarse a una persona o dividirse con un importe personalizado. El balance cuenta quién pagó frente a la parte que correspondía a cada uno y muestra cuánto debe una persona a la otra. Los pagos entre perfiles reducen esa deuda, sin duplicar ingresos ni gastos. El balance considera todos los meses, aunque el resumen y el historial se filtren por mes.
+
+El resumen muestra ingresos, gastos, ahorro neto registrado y un margen orientativo del mes; este último no sustituye el saldo bancario. Los movimientos del fondo de disfrute cuentan en el ahorro neto para que un traspaso desde los objetivos no se contabilice como dinero libre. Los movimientos financieros se guardan en la misma SQLite compartida y se incluyen en exportaciones e importaciones; las copias antiguas siguen siendo válidas.
+
+La vista **Ahorro y viajes** muestra tres hitos compartidos: **1.000 € Viaje express**, **3.000 € Disney París** y **10.000 € Disney worldwide**. Los objetivos avanzan solo con movimientos de dinero registrados por los usuarios; también se pueden registrar retiradas. La pantalla distingue ese saldo de la estimación de pedidos evitados y muestra el historial de aportaciones.
 
 Cada objetivo desbloquea el plan de reservas al llegar al **60 %**. Desde ese punto se pueden marcar fechas, billetes, hotel y presupuesto; la app registra el avance, sin realizar reservas por sí misma. La primera aportación positiva al ahorro de cada semana suma **10 puntos**, con independencia del importe. Las aportaciones siguientes de esa semana no duplican el bonus.
 
@@ -77,9 +81,9 @@ Las llaves se canjean por planes compartidos, gratuitos o con un coste declarado
 
 ## Datos y copias
 
-La base SQLite está en `data/casa.sqlite`, o en la ruta indicada por `DATABASE_PATH`. El endpoint `GET /api/export` entrega una copia JSON del plan, las pools, las tareas cogidas, los puntos, el historial, las recetas con fotos, el plan de comidas, la compra, el ahorro, las misiones, llaves, logros, fondo y canjes. El endpoint de importación acepta también copias antiguas sin datos de pools, comidas, ahorro o Hogar Co-op.
+La base SQLite está en `data/casa.sqlite`, o en la ruta indicada por `DATABASE_PATH`. El endpoint `GET /api/export` entrega una copia JSON del plan, las pools, las tareas cogidas, los puntos, el historial, las recetas con fotos, el plan de comidas, la compra, los ingresos, gastos, pagos entre perfiles, ahorro, misiones, llaves, logros, fondo y canjes. El endpoint de importación acepta también copias antiguas sin datos de pools, comidas, finanzas, ahorro o Hogar Co-op.
 
-La aplicación no tiene contraseñas: cualquier persona con acceso a su dirección puede consultar o modificar los datos. Para móviles en la red local, configura `HOST=0.0.0.0` y abre la dirección de red que imprime el servidor. El equipo que aloja SQLite debe permanecer encendido. Para usar la PWA desde una IP local se necesita un origen seguro (HTTPS); el tablero compartido funciona por HTTP local.
+La aplicación no tiene contraseñas: cualquier persona con acceso a su dirección puede consultar o modificar los datos, incluidos ingresos y gastos. Comparte la dirección solo con quienes deban tener acceso a esa información. Para móviles en la red local, configura `HOST=0.0.0.0` y abre la dirección de red que imprime el servidor. El equipo que aloja SQLite debe permanecer encendido. Para usar la PWA desde una IP local se necesita un origen seguro (HTTPS); el tablero compartido funciona por HTTP local.
 
 ## Despliegue
 

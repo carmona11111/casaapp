@@ -1,0 +1,62 @@
+import React,{useEffect,useState} from 'react';
+import {ArrowLeftRight,Check,Landmark,Plus,Receipt,Trash2,Wallet} from 'lucide-react';
+import {api,dateText,todayLocal} from './types';
+
+type Person={id:string;name:string};
+type Entry={id:string;kind:'income'|'expense'|'settlement';amount_cents:number;title:string;category:string;occurred_on:string;paid_by:string;other_person_id:string|null;shares:{person_id:string;amount_cents:number}[];recorded_by:string};
+type State={month:string;entries:Entry[];balances:Record<string,number>;income_cents:number;expense_cents:number;savings_cents:number;available_cents:number;by_category:{category:string;amount_cents:number}[];by_person:{person_id:string;income_cents:number;paid_cents:number;saved_cents:number}[];categories:{income:string[];expense:string[]}};
+type Write=(path:string,payload:object,success:string)=>Promise<boolean>;
+type Mode='overview'|'income'|'expense';
+const euro=(cents:number)=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(cents/100);
+const cents=(amount:string)=>Math.round(Number(amount)*100);
+
+export function Finance({mode,actor,people,disabled,write,onSavings}:{mode:Mode;actor:string;people:Person[];disabled:boolean;write:Write;onSavings:()=>void}){
+ const [month,setMonth]=useState(todayLocal().slice(0,7));
+ const [data,setData]=useState<State|null>(null),[error,setError]=useState(''),[saving,setSaving]=useState(false);
+ const [amount,setAmount]=useState(''),[title,setTitle]=useState(''),[date,setDate]=useState(todayLocal());
+ const [category,setCategory]=useState(''),[payer,setPayer]=useState(actor),[split,setSplit]=useState('equal'),[customShare,setCustomShare]=useState('');
+ const [settlementAmount,setSettlementAmount]=useState(''),[settlementDate,setSettlementDate]=useState(todayLocal()),[deleteId,setDeleteId]=useState<string|null>(null);
+ const personName=(id:string|null)=>people.find(person=>person.id===id)?.name||'Alguien';
+ async function load(){try{setData(await api('/api/finance?month='+encodeURIComponent(month)));setError('');}catch(e:any){setError(e.message);}}
+ useEffect(()=>{void load();const refresh=()=>{if(document.visibilityState==='visible')void load();};const timer=setInterval(refresh,15000);window.addEventListener('focus',refresh);return()=>{clearInterval(timer);window.removeEventListener('focus',refresh);};},[month]);
+ useEffect(()=>setPayer(actor),[actor]);
+ const debtor=people.find(person=>(data?.balances[person.id]||0)<0);
+ const creditor=people.find(person=>(data?.balances[person.id]||0)>0);
+ const owed=debtor?-(data?.balances[debtor.id]||0):0;
+ const kind=mode==='income'?'income':'expense';
+ const options=data?.categories[kind]||(kind==='income'?['Nómina','Extra','Otros']:['Casa','Supermercado','Transporte','Ocio','Salud','Otros']);
+ const selectedCategory=options.includes(category)?category:options[0];
+ async function save(e:React.FormEvent){
+  e.preventDefault();const amount_cents=cents(amount);
+  if(!Number.isSafeInteger(amount_cents)||amount_cents<1||amount_cents>100000000){setError('Indica un importe entre 0,01 € y 1.000.000 €.');return;}
+  let shares:{person_id:string;amount_cents:number}[]=[];
+  if(kind==='expense'){
+   let first=split==='equal'?Math.ceil(amount_cents/2):split===people[0]?.id?amount_cents:split===people[1]?.id?0:cents(customShare);
+   if(!Number.isSafeInteger(first)||first<0||first>amount_cents){setError('El reparto personalizado debe estar entre 0 € y el importe total.');return;}
+   shares=[{person_id:people[0].id,amount_cents:first},{person_id:people[1].id,amount_cents:amount_cents-first}];
+  }
+  setSaving(true);
+  const ok=await write('/api/finance/add',{actor,kind,amount_cents,title:title.trim(),category:selectedCategory,occurred_on:date,paid_by:kind==='income'?actor:payer,other_person_id:null,shares},kind==='income'?'Ingreso guardado':'Gasto compartido guardado');
+  if(ok){setAmount('');setTitle('');setCustomShare('');setError('');await load();}
+  setSaving(false);
+ }
+ async function settle(e:React.FormEvent){
+  e.preventDefault();if(!debtor||!creditor)return;
+  const amount_cents=cents(settlementAmount);
+  if(!Number.isSafeInteger(amount_cents)||amount_cents<1||amount_cents>owed){setError('El pago no puede superar la deuda pendiente.');return;}
+  setSaving(true);
+  const ok=await write('/api/finance/add',{actor,kind:'settlement',amount_cents,title:`Pago de ${debtor.name} a ${creditor.name}`,category:'Ajuste',occurred_on:settlementDate,paid_by:debtor.id,other_person_id:creditor.id,shares:[]},'Pago registrado');
+  if(ok){setSettlementAmount('');await load();}
+  setSaving(false);
+ }
+ async function remove(id:string){setSaving(true);const ok=await write('/api/finance/delete',{actor,id},'Movimiento borrado');if(ok){setDeleteId(null);await load();}setSaving(false);}
+ const visible=mode==='income'?data?.entries.filter(entry=>entry.kind==='income'):mode==='expense'?data?.entries.filter(entry=>entry.kind!=='income'):data?.entries.slice(0,8);
+ return <div className="finance-page">
+  <div className="page-heading finance-heading"><div><span className="eyebrow">EL MAPA DEL DINERO</span><h1>{mode==='overview'?'Nuestra economía':mode==='income'?'Ingresos de casa':'Gastos compartidos'}</h1><p>{mode==='overview'?'Un vistazo a lo que entra, sale y guardáis para el futuro.':mode==='income'?'Apuntad ingresos reales para saber cuánto entra cada mes.':'Registrad quién pagó y cuánto corresponde a cada persona, como en Tricount.'}</p></div><label className="finance-month">Mes<input type="month" min="2000-01" max="2100-12" required value={month} onChange={e=>{const value=e.target.value;if(!value)return;setMonth(value);const selected=value===todayLocal().slice(0,7)?todayLocal():value+'-01';setDate(selected);setSettlementDate(selected);}}/></label></div>
+  {error&&<div className="notice error" role="alert">{error}<button onClick={()=>void load()}>Reintentar</button></div>}
+  <div className="finance-metrics"><article className="income"><Landmark size={20}/><span>Ingresos</span><strong>{euro(data?.income_cents||0)}</strong></article><article className="expense"><Receipt size={20}/><span>Gastos</span><strong>{euro(data?.expense_cents||0)}</strong></article><article className="saving"><Wallet size={20}/><span>Ahorro neto registrado</span><strong>{euro(data?.savings_cents||0)}</strong></article><article className="available"><ArrowLeftRight size={20}/><span>Margen registrado</span><strong>{euro(data?.available_cents||0)}</strong></article></div>
+  {mode==='overview'&&<><p className="finance-hint">El margen resta gastos y aportaciones netas de ahorro a los ingresos que habéis apuntado este mes. Es orientativo, no el saldo de vuestro banco.</p><div className="finance-overview-grid"><section className="finance-card"><span className="eyebrow">BALANCE ENTRE VOSOTROS</span><h2>{debtor&&creditor?`${debtor.name} debe ${euro(owed)} a ${creditor.name}`:'Cuentas al día'}</h2><p>{debtor&&creditor?'Los pagos compartidos se compensan automáticamente. Registrad el pago cuando saldéis la diferencia.':'No queda ningún gasto compartido por saldar.'}</p></section><section className="finance-card"><span className="eyebrow">EN QUÉ SE HA IDO</span><h2>Gastos por categoría</h2>{data?.by_category.length?data.by_category.map(row=><div className="finance-category" key={row.category}><span>{row.category}</span><div><i style={{width:`${Math.max(5,Math.round(row.amount_cents/(data.expense_cents||1)*100))}%`}}/></div><strong>{euro(row.amount_cents)}</strong></div>):<p>Los gastos aparecerán aquí cuando registréis el primero.</p>}</section></div><div className="finance-person-grid">{data?.by_person.map(row=><article key={row.person_id}><strong>{personName(row.person_id)}</strong><span>Ingresó {euro(row.income_cents)}</span><span>Pagó {euro(row.paid_cents)} en gastos</span><span>Apartó {euro(row.saved_cents)}</span></article>)}</div></>}
+  {mode!=='overview'&&<div className="finance-actions-grid"><section className="finance-card finance-form"><span className="eyebrow">{kind==='income'?'DINERO QUE ENTRA':'TICKET COMPARTIDO'}</span><h2>{kind==='income'?'Registrar ingreso':'Registrar gasto'}</h2><form onSubmit={e=>void save(e)}><label>Concepto<input required maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} placeholder={kind==='income'?'Ej. nómina de octubre':'Ej. compra semanal'}/></label><div className="finance-form-row"><label>Importe (€)<input type="number" min="0.01" max="1000000" step="0.01" required value={amount} onChange={e=>setAmount(e.target.value)}/></label><label>Fecha<input type="date" required min="2000-01-01" max="2100-12-31" value={date} onChange={e=>setDate(e.target.value)}/></label></div><label>Categoría<select value={selectedCategory} onChange={e=>setCategory(e.target.value)}>{options.map(option=><option key={option}>{option}</option>)}</select></label>{kind==='expense'&&<><label>¿Quién pagó?<select value={payer} onChange={e=>setPayer(e.target.value)}>{people.map(person=><option value={person.id} key={person.id}>{person.name}</option>)}</select></label><label>¿Cómo se reparte?<select value={split} onChange={e=>setSplit(e.target.value)}><option value="equal">A medias</option>{people.map(person=><option value={person.id} key={person.id}>Solo {person.name}</option>)}<option value="custom">A medida</option></select></label>{split==='custom'&&<label>Parte de {people[0]?.name} (€)<input type="number" min="0" max={amount||'1000000'} step="0.01" required value={customShare} onChange={e=>setCustomShare(e.target.value)}/><small>La parte de {people[1]?.name} se calcula automáticamente.</small></label>}</>}<button className="primary" disabled={disabled||saving}><Plus size={16}/> {kind==='income'?'Guardar ingreso':'Guardar gasto'}</button></form></section>{mode==='expense'&&<section className="finance-card finance-settle"><span className="eyebrow">CUENTAS CLARAS</span><h2>{debtor&&creditor?`${debtor.name} debe ${euro(owed)} a ${creditor.name}`:'Todo saldado'}</h2><p>El balance cuenta todos los gastos y pagos registrados, aunque cambies de mes. El pago entre vosotros ajusta la deuda, pero no cuenta como ingreso ni como gasto nuevo.</p>{debtor&&creditor&&<form onSubmit={e=>void settle(e)}><label>Pago realizado (€)<input type="number" min="0.01" max={(owed/100).toFixed(2)} step="0.01" required value={settlementAmount} onChange={e=>setSettlementAmount(e.target.value)} placeholder={(owed/100).toFixed(2)}/></label><label>Fecha del pago<input type="date" min="2000-01-01" max="2100-12-31" required value={settlementDate} onChange={e=>setSettlementDate(e.target.value)}/></label><button className="secondary" disabled={disabled||saving}><Check size={16}/> Registrar pago</button></form>}</section>}</div>}
+  <section className="finance-card finance-history"><div className="finance-history-head"><div><span className="eyebrow">HISTORIAL DEL MES</span><h2>{mode==='income'?'Ingresos':mode==='expense'?'Gastos y pagos':'Últimos movimientos'}</h2></div>{mode==='overview'&&<button className="secondary" onClick={onSavings}>Ver objetivos de ahorro</button>}</div>{visible?.length?visible.map(entry=><article className="finance-entry" key={entry.id}><span className={'finance-entry-symbol '+entry.kind}>{entry.kind==='income'?'+':entry.kind==='settlement'?'↔':'−'}</span><div><strong>{entry.title}</strong><small>{entry.category} · {dateText(entry.occurred_on,{day:'numeric',month:'short',year:'numeric'})} · {entry.kind==='income'?`Ingresó ${personName(entry.paid_by)}`:entry.kind==='expense'?`Pagó ${personName(entry.paid_by)}`:`${personName(entry.paid_by)} pagó a ${personName(entry.other_person_id)}`}</small>{entry.kind==='expense'&&<small>Reparto: {entry.shares.map(share=>`${personName(share.person_id)} ${euro(share.amount_cents)}`).join(' · ')}</small>}</div><b>{entry.kind==='income'?'+':entry.kind==='expense'?'−':''}{euro(entry.amount_cents)}</b>{entry.recorded_by===actor&&(deleteId===entry.id?<div className="finance-delete"><button className="danger-text" disabled={disabled||saving} onClick={()=>void remove(entry.id)}>Borrar</button><button className="text-button" onClick={()=>setDeleteId(null)}>Cancelar</button></div>:<button className="icon-button" disabled={disabled||saving} aria-label={`Borrar ${entry.title}`} onClick={()=>setDeleteId(entry.id)}><Trash2 size={16}/></button>)}</article>):<div className="empty">Todavía no hay movimientos de este tipo en el mes elegido.</div>}</section>
+ </div>;
+}

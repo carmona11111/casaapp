@@ -7,6 +7,7 @@ import {openStore} from '../server/store.mjs';
 import {initializePools,poolAction,poolState} from '../server/pools.mjs';
 import {mealsState,saveRecipe,setMeal,setMealCompletion,setNoDelivery,setShoppingCheck} from '../server/meals.mjs';
 import {savingsState,addSavings} from '../server/savings.mjs';
+import {financeState,addFinanceEntry} from '../server/finance.mjs';
 import {localDate,monday} from '../server/dates.mjs';
 
 test('los dos perfiles conservan y comparten tareas, comidas, compra, ahorro y puntos tras reabrir SQLite',()=>{
@@ -30,13 +31,15 @@ test('los dos perfiles conservan y comparten tareas, comidas, compra, ahorro y p
   setMealCompletion(db,{date:today,slot:'dinner',actor:'person2',completed:true});
   setNoDelivery(db,{date:today,actor:'ivan',done:true,saved_cents:1500});
   addSavings(db,{actor:'ivan',amount_cents:2500,note:'Fondo común'});
+  addFinanceEntry(db,{actor:'ivan',kind:'income',amount_cents:180000,title:'Sueldo',category:'Nómina',occurred_on:today,paid_by:'ivan',other_person_id:null,shares:[]});
+  addFinanceEntry(db,{actor:'person2',kind:'expense',amount_cents:3001,title:'Compra',category:'Supermercado',occurred_on:today,paid_by:'person2',other_person_id:null,shares:[{person_id:'ivan',amount_cents:1501},{person_id:'person2',amount_cents:1500}]});
   const before=poolState(db,today);
   assert.ok(before.totals.find(x=>x.person_id==='ivan').points>0);
   assert.ok(before.totals.find(x=>x.person_id==='person2').points>0);
   db.close();db=undefined;
 
   db=openStore(path);
-  const shared=poolState(db,today),meals=mealsState(db,week),savings=savingsState(db);
+  const shared=poolState(db,today),meals=mealsState(db,week),savings=savingsState(db),finance=financeState(db,today.slice(0,7));
   assert.deepEqual(shared.totals,before.totals);
   assert.deepEqual(shared.people.map(x=>x.id),['ivan','person2']);
   assert.equal(shared.tasks.find(x=>x.id==='t1').available,false);
@@ -50,5 +53,10 @@ test('los dos perfiles conservan y comparten tareas, comidas, compra, ahorro y p
   assert.equal(meals.noDelivery[0].person_id,'ivan');
   assert.equal(savings.total_cents,2500);
   assert.equal(savings.entries[0].person_id,'ivan');
+  assert.equal(finance.income_cents,180000);
+  assert.equal(finance.expense_cents,3001);
+  assert.equal(finance.balances.ivan,-1501);
+  assert.equal(finance.balances.person2,1501);
+  assert.equal(finance.entries.length,2);
  }finally{db?.close();rmSync(dir,{recursive:true,force:true});}
 });
