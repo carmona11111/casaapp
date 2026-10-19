@@ -1,16 +1,13 @@
-# SQLite y sus archivos WAL deben vivir en el disco persistente de Render.
+# Configuración temporal para desplegar antes de contratar y montar el disco.
+# Los datos SQLite se perderán al reiniciar o volver a desplegar este servicio.
 services:
   - type: web
     name: casaapp
     runtime: node
-    plan: starter
+    plan: free
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
-    disk:
-      name: casa-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: "24"
@@ -20,5 +17,3 @@ services:
         value: 0.0.0.0
       - key: PUBLIC_URL
         value: https://casaapp-5tky.onrender.com
-      - key: DATABASE_PATH
-        value: /var/data/casa.sqlite

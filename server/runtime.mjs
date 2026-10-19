@@ -1,4 +1,4 @@
-import {isAbsolute,resolve} from 'node:path';
+import {resolve} from 'node:path';
 import {detectLanAddresses, developmentUrl} from './network.mjs';
 
 export function runtimeConfig(env, root) {
@@ -11,7 +11,5 @@ export function runtimeConfig(env, root) {
  if(!['http:','https:'].includes(url.protocol)||url.pathname!=='/'||url.search||url.hash||url.username||url.password)throw new Error('PUBLIC_URL debe ser un origen HTTP(S), sin ruta, parámetros ni credenciales.');
  if(production&&url.protocol!=='https:')throw new Error('Producción requiere PUBLIC_URL con HTTPS o RENDER_EXTERNAL_URL de Render.');
  const databasePath=env.DATABASE_PATH||resolve(root,'data/casa.sqlite');
- if(production&&env.RENDER==='true'&&(!env.DATABASE_PATH||!isAbsolute(databasePath)||!resolve(databasePath).startsWith('/var/data/')))
-  throw new Error('Render requiere DATABASE_PATH dentro de /var/data y un disco persistente montado en /var/data.');
  return {production,port,host,localAddresses,publicUrl,databasePath};
 }

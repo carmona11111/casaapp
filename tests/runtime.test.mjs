@@ -7,7 +7,7 @@ import {runtimeConfig} from '../server/runtime.mjs';
 import {openStore} from '../server/store.mjs';
 
 const render={NODE_ENV:'production',RENDER:'true',RENDER_EXTERNAL_URL:'https://casa-test.onrender.com',PORT:'10000'};
-test('Render detecta URL y escucha pública; conserva la ruta de disco configurada',()=>{
+test('Render permite arranque temporal sin disco y conserva la ruta configurada al añadirlo',()=>{
  const config=runtimeConfig({...render,DATABASE_PATH:'/var/data/casa.sqlite'},'/app');
  assert.equal(config.publicUrl,render.RENDER_EXTERNAL_URL);
  assert.equal(config.host,'0.0.0.0');
@@ -15,8 +15,8 @@ test('Render detecta URL y escucha pública; conserva la ruta de disco configura
  assert.equal(config.databasePath,'/var/data/casa.sqlite');
  assert.deepEqual(config.localAddresses,[]);
  assert.equal(runtimeConfig({...render,PUBLIC_URL:'https://casa.example/',DATABASE_PATH:'/var/data/casa.sqlite'},'/app').publicUrl,'https://casa.example');
- for(const DATABASE_PATH of [undefined,'./data/casa.sqlite','/app/data/casa.sqlite','/var/data/../app/casa.sqlite'])
-  assert.throws(()=>runtimeConfig({...render,DATABASE_PATH},'/app'),/disco persistente/);
+ assert.equal(runtimeConfig(render,'/app').databasePath,'/app/data/casa.sqlite');
+ assert.equal(runtimeConfig({...render,DATABASE_PATH:'/app/data/casa.sqlite'},'/app').databasePath,'/app/data/casa.sqlite');
 });
 test('Producción mantiene la validación HTTPS y de origen',()=>{
  for(const PUBLIC_URL of ['http://casa.example','https://casa.example/ruta','https://user:secret@casa.example']) {
@@ -33,7 +33,7 @@ test('Un error de ruta no crea otra base de datos',()=>{
   db.close();
   const occupied=join(dir,'not-a-directory');writeFileSync(occupied,'file');
   assert.throws(()=>openStore(join(occupied,'casa.sqlite')),error=>{
-   assert.match(error.message,/Disks > Add Disk/);
+   assert.match(error.message,/Comprueba DATABASE_PATH/);
    assert.match(error.message,/No se ha cambiado automáticamente/);
    assert.ok(error.cause);
    return true;

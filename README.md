@@ -83,11 +83,11 @@ La aplicación no tiene contraseñas: cualquier persona con acceso a su direcci�
 
 ## Despliegue
 
-El proyecto incluye `Dockerfile`, configuración de Caddy en `deploy/` y `render.yaml`. En producción, sirve la app con `npm start`, conserva `DATABASE_PATH` en un volumen persistente y configura `PUBLIC_URL` con el origen HTTPS real. SQLite está diseñado aquí para una sola instancia del servidor.
+El proyecto incluye `Dockerfile`, configuración de Caddy en `deploy/` y `render.yaml`. En producción, sirve la app con `npm start` y configura `PUBLIC_URL` con el origen HTTPS real. SQLite está diseñado aquí para una sola instancia del servidor.
 
-En Render, crea o sincroniza el servicio desde `render.yaml`: usa el plan de pago `starter`, monta un disco de 1 GB en `/var/data` y guarda SQLite en `/var/data/casa.sqlite`. El control de salud `/api/health` consulta esa base. El arranque en Render rechaza una ruta de base de datos ausente, relativa o fuera de `/var/data`, para evitar que el historial y los puntos se guarden accidentalmente en el almacenamiento temporal. El disco es compartido por Iván e Irene dentro de la misma instancia; sus acciones se atribuyen al perfil elegido.
+**Fase temporal:** `render.yaml` usa el plan gratuito sin disco para permitir el primer despliegue. Si `DATABASE_PATH` no está configurada, SQLite se crea en `data/casa.sqlite` dentro del servicio. Esta carpeta es temporal en Render: los cambios de ambos perfiles pueden desaparecer tras un reinicio o despliegue. El control de salud `/api/health` comprueba que la base se abre, pero no que exista un disco persistente. No uses esta fase para guardar datos que necesites conservar sin descargar antes una copia desde `/api/export`.
 
-Si ya tienes datos en un servicio Render sin disco, descarga antes la copia desde `/api/export` y, después del cambio de servicio, impórtala desde la app. Render no copia automáticamente los archivos del sistema temporal al nuevo disco. En un servicio creado manualmente, configura el mismo plan, el disco y `DATABASE_PATH=/var/data/casa.sqlite` en su panel. La persistencia real del servicio publicado debe comprobarse tras el despliegue con los dos perfiles y un reinicio del servicio.
+**Fase definitiva:** cambia el servicio al plan `starter`, añade un disco de 1 GB montado en `/var/data` y configura `DATABASE_PATH=/var/data/casa.sqlite` en el panel. Actualiza también `render.yaml` con ese plan, disco y variable, y vuelve a activar la validación de la ruta en `server/runtime.mjs`. Antes del cambio descarga `/api/export`; después importa esa copia desde la app, ya que Render no traslada automáticamente el archivo SQLite temporal al disco. Comprueba la persistencia con los dos perfiles y un reinicio del servicio.
 
 ## Comprobación
 

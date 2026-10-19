@@ -10,7 +10,7 @@ export function openStore(path) {
   mkdirSync(dirname(path),{recursive:true});
   db=new DatabaseSync(path);
  } catch(cause) {
-  throw new Error(`No se puede abrir SQLite en ${path}. Comprueba DATABASE_PATH y los permisos de su carpeta. En Render, /var/data requiere un disco persistente montado en /var/data (Disks > Add Disk, servicio de pago). No se ha cambiado automáticamente de base de datos.`,{cause});
+  throw new Error(`No se puede abrir SQLite en ${path}. Comprueba DATABASE_PATH y los permisos de su carpeta. No se ha cambiado automáticamente de base de datos.`,{cause});
  }
  db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;');
  db.exec(readFileSync(new URL('./migrations/001_initial.sql',import.meta.url),'utf8'));
