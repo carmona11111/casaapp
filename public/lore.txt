@@ -1,0 +1,5 @@
+Personaje	Responsabilidad
+Mickey Mouse	Panel principal, tareas semanales, progreso y recompensas
+Cenicienta	Limpieza, orden y reparto de tareas
+Ratatouille	Menús, recetas, compra y aprovechamiento
+Tío Gilito	Presupuesto, ahorro común y seguimiento de inversiones

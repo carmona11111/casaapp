@@ -2,6 +2,7 @@ import {spawn} from 'node:child_process';
 import {closeSync, existsSync, mkdirSync, openSync, readFileSync, unlinkSync, writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {runtimeConfig} from '../server/runtime.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const entry = resolve(root, 'server/index.mjs');
@@ -27,10 +28,18 @@ function savedProcess() {
 }
 
 async function check(info) {
-  const response = await fetch(`http://127.0.0.1:${info.port}/api/state`, {signal: AbortSignal.timeout(1500)});
+  const response = await fetch(`http://127.0.0.1:${info.port}/api/pool`, {signal: AbortSignal.timeout(1500)});
   if (!response.ok) throw new Error(`La API responde HTTP ${response.status}.`);
   const data = await response.json();
-  if (data.house?.id !== 'home' || !Array.isArray(data.people)) throw new Error('Respuesta inesperada en el puerto de Casa al día.');
+  if (!Array.isArray(data.people) || !Array.isArray(data.tasks) || !data.week || !Array.isArray(data.gamification?.daily)) throw new Error('Respuesta inesperada en el puerto de Casa al día.');
+  const meals = await fetch(`http://127.0.0.1:${info.port}/api/meals`, {signal: AbortSignal.timeout(1500)});
+  if (!meals.ok) throw new Error(`La API de comidas responde HTTP ${meals.status}.`);
+  const mealData = await meals.json();
+  if (!Array.isArray(mealData.recipes) || !Array.isArray(mealData.plan) || !Array.isArray(mealData.shopping) || !Array.isArray(mealData.completed)) throw new Error('Respuesta inesperada en la API de comidas.');
+  const savings = await fetch(`http://127.0.0.1:${info.port}/api/savings`, {signal: AbortSignal.timeout(1500)});
+  if (!savings.ok) throw new Error('La API de ahorro no responde correctamente.');
+  const savingsData = await savings.json();
+  if (!Array.isArray(savingsData.goals) || !Array.isArray(savingsData.preparation)) throw new Error('La API de ahorro no responde correctamente.');
   const page = await fetch(`http://127.0.0.1:${info.port}/entrada`, {signal: AbortSignal.timeout(1500)});
   if (!page.ok || !(await page.text()).includes('Casa al día')) throw new Error('La pantalla de entrada no responde correctamente.');
   return data;
@@ -39,8 +48,9 @@ async function check(info) {
 function show(info, data) {
   console.log(`Servidor activo en segundo plano (PID ${info.pid}).`);
   console.log('Entrada y API verificadas: HTTP 200.');
+  console.log(`Marcador común: ${data.totals.reduce((sum, person) => sum + person.points, 0)} puntos.`);
   console.log(`Este ordenador: http://localhost:${info.port}/`);
-  console.log(`Red local: ${data.entryUrl.replace(/entrada$/, '')}`);
+  console.log(`Red local: ${data.entryUrl?.replace(/entrada$/, '') || runtimeConfig(process.env, root).publicUrl+'/'}`);
   console.log(`Registro: ${logFile}`);
 }
 

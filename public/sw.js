@@ -1,7 +1,8 @@
-const CACHE='casa-shell-v2';
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['/','/icon.svg','/icon-192.png','/icon-512.png','/manifest.webmanifest'])));self.skipWaiting();});
+const CACHE='casa-shell-v3';
+const ART=['/0eefb429-5aa8-4479-940a-0c638fd9f3da.png','/mickey.png','/cenicienta.png','/ratatouille.png','/tio-gilito.png','/castillo/01_cimientos.png','/castillo/02_paredes.png','/castillo/03_tejados.png','/castillo/04_iluminacion.png'];
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['/','/icon.svg','/icon-192.png','/icon-512.png','/manifest.webmanifest',...ART])));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('casa-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',event=>{const url=new URL(event.request.url);if(event.request.method!=='GET'||url.origin!==self.location.origin||url.pathname.startsWith('/api/'))return;
  if(event.request.mode==='navigate'){event.respondWith(fetch(event.request).then(async response=>{if(response.ok){const cache=await caches.open(CACHE);await cache.put('/',response.clone());}return response;}).catch(()=>caches.match('/')));return;}
- if(url.pathname.startsWith('/assets/')||['/icon.svg','/icon-192.png','/icon-512.png','/manifest.webmanifest'].includes(url.pathname))event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).then(async response=>{if(response.ok){const cache=await caches.open(CACHE);await cache.put(event.request,response.clone());}return response;})));
+ if(url.pathname.startsWith('/assets/')||['/icon.svg','/icon-192.png','/icon-512.png','/manifest.webmanifest',...ART].includes(url.pathname))event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).then(async response=>{if(response.ok){const cache=await caches.open(CACHE);await cache.put(event.request,response.clone());}return response;})));
 });

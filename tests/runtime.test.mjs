@@ -14,7 +14,9 @@ test('Render detecta URL y escucha pública; conserva la ruta de disco configura
  assert.equal(config.port,10000);
  assert.equal(config.databasePath,'/var/data/casa.sqlite');
  assert.deepEqual(config.localAddresses,[]);
- assert.equal(runtimeConfig({...render,PUBLIC_URL:'https://casa.example/'},'/app').publicUrl,'https://casa.example');
+ assert.equal(runtimeConfig({...render,PUBLIC_URL:'https://casa.example/',DATABASE_PATH:'/var/data/casa.sqlite'},'/app').publicUrl,'https://casa.example');
+ for(const DATABASE_PATH of [undefined,'./data/casa.sqlite','/app/data/casa.sqlite','/var/data/../app/casa.sqlite'])
+  assert.throws(()=>runtimeConfig({...render,DATABASE_PATH},'/app'),/disco persistente/);
 });
 test('Producción mantiene la validación HTTPS y de origen',()=>{
  for(const PUBLIC_URL of ['http://casa.example','https://casa.example/ruta','https://user:secret@casa.example']) {
@@ -22,10 +24,10 @@ test('Producción mantiene la validación HTTPS y de origen',()=>{
  }
  assert.throws(()=>runtimeConfig({NODE_ENV:'production'},'/app'),/HTTPS/);
 });
-test('La base temporal explícita funciona y los errores de ruta no crean otra base',()=>{
+test('Un error de ruta no crea otra base de datos',()=>{
  const dir=mkdtempSync(join(tmpdir(),'casa-storage-'));
  try {
-  const config=runtimeConfig(render,dir);
+  const config=runtimeConfig({NODE_ENV:'development',DATABASE_PATH:join(dir,'casa.sqlite')},dir);
   const db=openStore(config.databasePath);
   assert.equal(db.prepare('PRAGMA quick_check').get().quick_check,'ok');
   db.close();

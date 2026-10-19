@@ -10,10 +10,23 @@ export function openStore(path) {
   mkdirSync(dirname(path),{recursive:true});
   db=new DatabaseSync(path);
  } catch(cause) {
-  throw new Error(`No se puede abrir SQLite en ${path}. Comprueba DATABASE_PATH y los permisos de su carpeta. En Render, /var/data requiere un disco persistente montado en /var/data (Disks > Add Disk, servicio de pago). Para una prueba temporal sin disco, configura DATABASE_PATH=./data/casa.sqlite; esos datos se pierden al reiniciar o desplegar. No se ha cambiado automáticamente de base de datos.`,{cause});
+  throw new Error(`No se puede abrir SQLite en ${path}. Comprueba DATABASE_PATH y los permisos de su carpeta. En Render, /var/data requiere un disco persistente montado en /var/data (Disks > Add Disk, servicio de pago). No se ha cambiado automáticamente de base de datos.`,{cause});
  }
  db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;');
- db.exec(readFileSync(new URL('./migrations/001_initial.sql',import.meta.url),'utf8')); transaction(db,()=>seed(db)); return db;
+ db.exec(readFileSync(new URL('./migrations/001_initial.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/002_pools.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/003_meals.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/004_home_goals.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/005_score_epoch.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/006_goal_preparation.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/007_coop.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/008_shared_tasks.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/009_coop_profile.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/010_coop_modes.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/011_coop_transfers.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/012_coop_agreements.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('./migrations/013_recipe_ratings.sql',import.meta.url),'utf8'));
+ transaction(db,()=>seed(db)); return db;
 }
 export function transaction(db,fn){ db.exec('BEGIN IMMEDIATE'); try {const result=fn();db.exec('COMMIT');return result;}catch(e){db.exec('ROLLBACK');throw e;} }
 export function plan(db){return {house:db.prepare('SELECT * FROM household').get(),people:db.prepare('SELECT * FROM people ORDER BY rowid').all(),zones:db.prepare('SELECT * FROM zones ORDER BY rowid').all(),templates:db.prepare('SELECT * FROM templates ORDER BY rowid').all().map(t=>({...t,steps:JSON.parse(t.steps),recurrence:JSON.parse(t.recurrence)}))};}

@@ -1,10 +1,16 @@
-# Casa al día
+# Hogar Encantado
 
-Aplicación de limpieza doméstica para Iván y Irene, ambos renombrables. React + TypeScript, servidor Node y SQLite persistente. El plan original está en `app.txt`; por petición posterior, el acceso actual es directo, sin login ni contraseña. No utiliza IA ni servicios de pago, no pide permisos de notificaciones y no opera sobre el chip NFC.
+La interfaz usa los personajes de `public/lore.txt` como guías: Mickey en inicio y misiones, Cenicienta en tareas, Ratatouille en comidas y Tío Gilito en ahorro. Los logros muestran las doce ilustraciones de la lámina de stickers que subiste; varios logros comparten una ilustración, pero mantienen sus nombres y condiciones propios. El álbum y los premios muestran también los objetivos pendientes con su ilustración oscurecida y el requisito para desbloquearlos; la vista inicial no concede premios ni puntos. El castillo de `public/castillo/` se ve completo y oscurecido desde el principio; sus capas ganan color con los hitos existentes de **125, 250, 375 y 500 XP acumulados**. Después permanece iluminado mientras continúan los niveles de 500 XP. Los umbrales que venían dentro del ZIP no se aplican.
+
+La primera vez que se elige un perfil en un navegador aparece una guía de siete pasos: visión general y las seis zonas de la app. Explica cómo coger tareas, planificar comidas, registrar ahorro, ganar XP y llaves, desbloquear stickers y organizar las pools. Se puede omitir y volver a abrir desde **Cómo funciona** en el menú. La marca de guía vista se guarda por perfil en el navegador; no modifica la base de datos compartida ni concede puntos.
+
+**Misiones y premios** siempre muestra sus objetivos. Con el servidor actualizado se ven las tres misiones, el álbum completo y el catálogo aunque el progreso sea cero. Si la respuesta del servidor todavía no incluye los datos cooperativos, aparece una vista de muestra con los objetivos bloqueados y un aviso para actualizarlo; esa vista no permite registrar ni canjear nada. Al cambiar de sección se vuelve al inicio de la pantalla.
+
+Tablero compartido de tareas domésticas para Iván e Irene. Cada persona elige su perfil, coge una tarea libre y la marca como hecha cuando termina. **No se asignan tareas por defecto** en el tablero de pools.
 
 ## Arranque local
 
-Requiere Node **24 o posterior** y npm. Desde el directorio del proyecto:
+Requiere Node 24 o posterior.
 
 ```bash
 npm ci
@@ -12,220 +18,83 @@ npm run build
 npm run serve
 ```
 
-Abre **http://localhost:4310/entrada** y selecciona persona. No necesitas contraseña ni crear una cuenta. El acceso normal `/` recuerda el perfil elegido; `/entrada` pregunta siempre quién eres.
+Abre `http://localhost:4310/entrada`. El acceso normal recuerda el perfil elegido en ese navegador; `/entrada` vuelve a preguntar quién entra. `npm run serve -- status` comprueba el servidor y `npm run serve -- stop` lo detiene. En desarrollo, `npm run dev` sirve la app y la API desde el mismo proceso.
 
-En este equipo ya están preparadas las dependencias y el build: basta con `npm run serve`. Arranca el servidor en segundo plano, guarda el registro en `data/runtime/server.log` y comprueba que la entrada y la API respondan. Puedes cerrar la terminal después del arranque. No configura el inicio automático tras reiniciar el ordenador; en ese caso vuelve a ejecutar el comando. Los archivos de contraseña y las cookies de versiones anteriores ya no se utilizan.
+## Cómo funciona
 
-Para comprobarlo o detenerlo conservando los datos:
+Las 34 tareas iniciales se distribuyen en cuatro pools. Las tareas de mascotas están desactivadas inicialmente y se pueden activar en **Organizar**.
 
-```bash
-npm run serve -- status
-npm run serve -- stop
-```
-
-Para actualizar la aplicación después de modificar el código, detén el servidor, ejecuta `npm run build` y arranca con `npm run serve`.
-
-El puerto 4310 evita los puertos de otros proyectos del equipo. Para desarrollar con recarga automática, detén primero el servidor de segundo plano y ejecuta `npm run dev`; Vite y API se sirven desde el mismo proceso y origen. Este modo necesita mantener la terminal abierta. También puedes comprobar el build estático en primer plano:
-
-```bash
-npm run build
-SERVE_BUILD=1 npm run dev
-```
-
-La PWA y el service worker se activan con el build estático. En desarrollo Vite no registra el worker. Una instalación previa de la PWA puede servir la última versión compilada si cambias entre ambos modos; usa las herramientas del navegador para desregistrar el worker al desarrollar.
-
-## Abrir desde el móvil por la red local (sin dominio)
-
-En `.env`, establece:
-
-```dotenv
-HOST=0.0.0.0
-PORT=4310
-```
-
-Elimina o comenta cualquier `PUBLIC_URL=http://localhost:4310` para que el servidor detecte automáticamente la IP privada del ordenador. Reinicia ejecutando `npm run serve -- stop` y después `npm run serve`: mostrará una dirección como `http://192.168.190.50:4310/`. Abre la dirección exacta que imprima, con **http**, desde un móvil conectado a la misma red. El ordenador debe permanecer encendido y el servidor en marcha.
-
-Si tiene varias tarjetas de red o la detección elige otra interfaz, establece también `PUBLIC_URL=http://IP_DEL_ORDENADOR:4310` y reinicia. El enlace de Ajustes/QR y el origen permitido para guardar utilizarán esa dirección. No necesitas abrir puertos en el router para acceder dentro de casa.
-
-Si el enlace funciona en el ordenador pero no desde el móvil, comprueba que no estás en una Wi-Fi de invitados con aislamiento entre dispositivos y que el firewall del ordenador permite TCP 4310 desde tu red local. La instalación PWA, el service worker y la copia automática al portapapeles necesitan un contexto seguro; el uso normal de tareas compartidas funciona por HTTP local. Para disponer de esas funciones desde la IP necesitarás HTTPS.
-
-## Funciones
-
-- Entrada directa sin contraseña. `/entrada` vuelve a preguntar la persona en cada navegación, aunque exista preferencia; el acceso normal `/` recuerda el perfil.
-- Hoy: tareas diarias, plan del día y pendientes agrupados, pasos desplegables, responsables y minutos orientativos. Vista propia o de los dos.
-- Semana de lunes a domingo, navegación a semanas anteriores o futuras, vista compartida e historial con filtros por persona, tarea, zona y fechas.
-- Acciones: completar, deshacer, asumir, mover, omitir con motivo y editar título, pasos, zona y tiempo de una ocasión concreta. La edición completa del plan (pasos, zona, tiempo, recurrencia, bloque, responsable fijo y activación) se hace desde Ajustes con confirmación de alcance.
-- Reparto habitual fijo y equilibrado entre Iván e Irene. Lavavajillas y basura son de Iván; el salón se barre y friega los martes por Irene. Los extras de sábado alternan responsable mediante bloques A/B desde el 12/10/2026 y siguen un ciclo de cuatro semanas. Las tareas con responsable fijo no cambian al rotar. Habitaciones pueden pasar a quincenales; mascotas desactivadas inicialmente.
-- Ausencias: vista previa de las ocasiones afectadas y confirmación separada para reasignar. Guardar la ausencia por sí sola no cambia el reparto. Si la otra persona también está ausente, se rechaza la reasignación. Una ausencia ya registrada permanece en el historial; el MVP no incluye cancelación de ausencias desde la interfaz.
-- Exportación JSON versionada sin sesiones ni secretos. Importación con validación de esquema y referencias, vista previa, recuentos, confirmación de sustitución total y transacción SQL.
-- QR generado localmente desde `PUBLIC_URL/entrada`, manifest e iconos para instalar en pantalla de inicio.
-
-## Reparto vigente desde el martes 13/10/2026
-
-Cada día, Iván gestiona platos/lavavajillas y revisa/saca la basura si hace falta. Irene repasa encimera y placa, recoge el salón y limpia la mesa. Son unos 15 y 16 minutos orientativos respectivamente, no duraciones obligatorias.
-
-| Día | Iván | Irene |
-| --- | --- | --- |
-| Lunes | Baño 1 y cambio de toallas de ambos baños | Baño 2 |
-| Martes | Lavar ropa y tender/secar (ocasiones separadas) | Barrer y fregar el salón |
-| Miércoles | Polvo y aspirado de habitaciones 1 y 2 | Habitación 3, polvo de salón/comedor y aspirado del sofá |
-| Jueves | Cocina a fondo | Revisar alimentos, frentes y suelo de cocina |
-| Viernes | Aspirar y fregar habitaciones | Repasar lavabos/WC y doblar/guardar ropa |
-| Sábado | Cambiar y lavar sábanas; recoger zonas comunes | Tender/secar sábanas; barrer y fregar comedor y pasillo |
-| Domingo | Mantenimiento diario | Mantenimiento diario |
-
-El extra del sábado alterna entre ambos. Sin el extra, el plan suma 260 min/semana para Iván y 270 para Irene. En las cuatro semanas del ciclo: Iván 280/260/290/260 e Irene 270/290/270/290 minutos estimados, aproximadamente 49 %/51 % del total. Los dos tienen baños, suelos o limpieza a fondo. La vista Semana muestra los tiempos previstos, excluyendo ocasiones omitidas y cubiertas.
-
-La limpieza del salón del martes 13/10/2026 se registró como hecha por Irene tras la confirmación del usuario, con hora de registro del servidor. No se marcaron hechos comedor ni pasillo. Se conservaron completados anteriores y los responsables originales en el historial, actualizando las tareas pendientes fijas. El cambio está implementado para futuras instalaciones en `server/household-plan.mjs`; `scripts/rebalance-household.mjs` contiene el ajuste puntual idempotente aplicado a la base existente. No se ejecuta en cada arranque ni sobrescribe cambios posteriores de Ajustes.
-
-## Reglas de datos y sincronización
-
-`server/migrations/001_initial.sql` crea el esquema; `server/seed.mjs` carga las dos personas, diez zonas y 34 plantillas. La inicialización es transaccional y solo ocurre sobre una base vacía. Una restricción única por plantilla y fecha original hace idempotente la generación.
-
-Las fechas domésticas son `YYYY-MM-DD` en Europe/Madrid. La semana se calcula por diferencia de lunes respecto a la fecha base, incluyendo offsets negativos; no depende de la paridad ISO. Los eventos y completados usan timestamps UTC del servidor. Se generan las ocasiones al consultar, desde la primera fecha de vigencia hasta el intervalo pedido; no es necesario abrir la aplicación todos los días. El máximo por consulta es de diez años.
-
-El frontend consulta cada 15 segundos mientras está visible y vuelve a consultar al recuperar el foco o la conexión. Las escrituras solo se presentan como guardadas tras recibir confirmación. Todas las acciones requieren versión vigente, transacción e identificador de idempotencia. Un conflicto devuelve HTTP 409 y actualiza los datos. Un reintento de la misma petición devuelve su resultado sin duplicar eventos.
-
-Los pendientes se agrupan por plantilla. Completar la última ocasión requiere confirmar qué anteriores se cubren. Se registra una sola limpieza; las demás quedan como «cubiertas por limpieza posterior» y no suman actividad ni minutos. Deshacer reabre esas ocasiones. Mover conserva la fecha original y suprime las repeticiones no modificadas del intervalo aplazado, aunque se hubieran generado al consultar Semana. Las ocasiones con excepciones manuales se conservan.
-
-Modificar el plan conserva completados y sus snapshots, las ocasiones pasadas y las excepciones individuales. Actualiza las abiertas desde hoy. Al desactivar una plantilla o cambiar su calendario, las repeticiones futuras sin excepciones quedan canceladas, sin borrar datos históricos. El resumen semanal cuenta limpiezas efectivas según fecha de actividad en Madrid; cubiertas, omitidas y deshechas no suman. Los minutos son estimaciones, nunca tiempo medido.
-
-Sin conexión se muestra el **último tablero consultado** guardado en ese navegador. Se desactivan escrituras; no hay cola offline. El historial remoto requiere conexión. El service worker solo guarda HTML y recursos estáticos y excluye `/api/`. Los datos del tablero van a una caché local separada que puede eliminarse borrando los datos del sitio en el navegador.
-
-## Acceso compartido
-
-La aplicación ya no tiene autenticación: cualquiera que pueda alcanzar su dirección puede consultar y editar el hogar. Está configurada para usarla en vuestra red local. Elegir un perfil únicamente atribuye actividad; no restringe permisos.
-
-Se mantienen la validación del origen de las escrituras del navegador, las cabeceras JSON propias, el control de versiones, las transacciones y los reintentos idempotentes. No se crean cookies de sesión. Los campos y tablas de autenticación que puedan quedar de una instalación anterior no se consultan ni se exportan.
-
-## Variables de entorno
-
-| Variable | Desarrollo | Producción |
-| --- | --- | --- |
-| `PORT` | `4310` | Puerto interno del servidor |
-| `HOST` | `127.0.0.1` | `0.0.0.0` dentro del contenedor |
-| `DATABASE_PATH` | `./data/casa.sqlite` | Ruta sobre volumen persistente |
-| `PUBLIC_URL` | IP local detectada con `HOST=0.0.0.0`; localhost en otro caso | **Origen HTTPS real**, sin ruta ni barra final |
-| `NODE_ENV` | Sin establecer | `production` |
-| `SERVE_BUILD` | `1` para probar el build sin Vite | No hace falta |
-| `CASA_DOMAIN` | No se usa | Dominio real, solo para Docker/Caddy |
-
-`.env.example` sirve de referencia; `.env` nunca se sube al repositorio. Producción requiere una URL HTTPS: `PUBLIC_URL` o, en Render, su variable automática `RENDER_EXTERNAL_URL`. `HOUSEHOLD_PASSWORD_HASH`, si quedó en un `.env` anterior, ya no se utiliza.
-
-## Despliegue en Render
-
-Crea un **Web Service**, con lenguaje **Node**, desde el repositorio `carmona11111/casaapp` y la rama `main`. La aplicación necesita su servidor y SQLite; un Static Site no ejecuta la API. Render proporciona un subdominio HTTPS `onrender.com`, por lo que no necesitas comprar un dominio.
-
-Configura estos campos:
-
-| Campo | Valor |
+| Pool | Disponibilidad tras completarla |
 | --- | --- |
-| Root Directory | Vacío (raíz del repositorio) |
-| Build Command | `npm ci --include=dev && npm run build` |
-| Start Command | `npm start` |
-| Health Check Path | `/entrada` |
-| Instancias | Una |
+| Cada día | Al día siguiente |
+| Cada 2–3 días | Tras 3 días completos |
+| Cada semana | El lunes siguiente |
+| Cada 4 semanas | Tras 28 días |
 
-Para el **plan gratuito**, configura estas variables de entorno:
+Cada tarea tiene uno de estos estados compartidos:
 
-| Variable | Valor |
-| --- | --- |
-| `NODE_VERSION` | `24` |
-| `NODE_ENV` | `production` |
-| `HOST` | `0.0.0.0` |
-| `DATABASE_PATH` | `./data/casa.sqlite` (almacenamiento temporal) |
-| `PUBLIC_URL` | Opcional: omítela para usar automáticamente la URL `onrender.com` asignada por Render |
+1. **Libre:** cualquiera puede pulsar «La cojo».
+2. **Cogida:** solo quien la cogió puede marcar «Ya la hice» o devolverla. Otra persona ve quién la tiene. La reserva caduca al día siguiente.
+3. **Hecha:** sale de la lista disponible hasta el próximo ciclo. La actividad conserva quién la hizo y cuándo.
 
-Render establece `PORT` y `RENDER_EXTERNAL_URL` automáticamente; la app los utiliza. No copies el `.env` local ni añadas el token de GitHub como variable de la app. Si tienes un dominio propio, configura `PUBLIC_URL` con su origen HTTPS exacto, sin ruta ni barra final. Un `PUBLIC_URL` antiguo o incorrecto debe eliminarse o corregirse porque tiene prioridad sobre la detección automática.
+El servidor impide que dos personas cojan o completen a la vez la misma tarea. Los cambios se guardan en SQLite y la pantalla se actualiza cada 15 segundos, al recuperar el foco o al volver la conexión. Sin conexión se muestra la última copia del tablero, con las escrituras desactivadas.
 
-El archivo `render.yaml` permite crear un servicio gratuito desde **New > Blueprint**. Para un servicio ya creado manualmente, un push no actualiza sus variables: cambia `DATABASE_PATH` en **Environment**, guarda y utiliza **Manual Deploy > Deploy latest commit** si no se despliega automáticamente.
+## Puntos
 
-**Error `mkdir /var/data`:** esa ruta requiere un disco montado. El plan gratuito no admite discos persistentes. Cambia `DATABASE_PATH=/var/data/casa.sqlite` por `DATABASE_PATH=./data/casa.sqlite` para arrancar con almacenamiento temporal. No añadas `mkdir /var/data` al comando de build ni de arranque.
+Al completar una tarea se obtiene XP según el esfuerzo estimado: **5 XP** hasta 5 minutos, **10 XP** de 6 a 15, **20 XP** de 16 a 30 y **30 XP** a partir de 31 minutos. Los puntos ya registrados se conservan con su valor histórico. Cada **500 XP** el hogar sube un nivel y empieza a construir otro rincón; la XP nunca se gasta. Una tarea de al menos 16 minutos puede marcarse como **«La hicimos juntos»**: la XP se divide entre ambas personas y suma una sola vez al hogar. Coger o devolver tareas no da XP ni se asigna ninguna tarea por defecto.
 
-**Límite del plan gratuito:** los datos de SQLite se pierden al reiniciar o redesplegar, también cuando se reinicia una instancia tras una suspensión. Este modo sirve para probar la aplicación; no garantiza conservar las tareas completadas. Exporta JSON desde Ajustes para guardar una copia fuera de Render.
+El marcador puede comenzar una nueva etapa sin borrar las tareas hechas. La fecha de inicio de puntos se guarda en SQLite y en las copias de seguridad; solo las acciones posteriores cuentan en los totales, aunque el historial anterior siga conservado.
 
-Para conservar el historial de forma duradera con la implementación actual, utiliza un servicio de pago y añade un **disco persistente de 1 GB**, con Mount Path **`/var/data`**, en **Disks > Add Disk**; después establece `DATABASE_PATH=/var/data/casa.sqlite`. El disco solo está disponible al ejecutar el servicio, no durante build o pre-deploy. El disco y el servicio tienen coste; consulta el importe que muestra Render antes de crearlos. Otra opción requiere adaptar la app a una base de datos externa: la versión actual utiliza SQLite local y no acepta una URL de PostgreSQL.
+En **Organizar** se puede cambiar la pool de una tarea, editarla, activarla o desactivarla, y añadir tareas propias. Los cambios de título, zona o minutos se aplican a partir de ese momento; el historial guarda el título, la zona y los puntos que tenía cada tarea cuando se hizo.
 
-La primera instalación inicia el plan de Iván e Irene, pero el historial de la instalación local no se sube a GitHub. Para trasladarlo, exporta JSON desde Ajustes en la app local e impórtalo desde Ajustes en Render. Desde ese momento, usad ambos la misma URL de Render: la base local y la remota son independientes.
+## Comidas y compra
 
-El acceso sigue siendo directo, sin login, tal como está configurado. En una URL pública, cualquiera que alcance esa dirección podrá consultar y modificar las tareas; seleccionar persona no limita el acceso.
+La sección **Comidas y compra** empieza con un recetario vacío. Cada receta se crea con nombre, ingredientes con cantidad y unidad, y una foto opcional. La foto se reduce en el navegador y se guarda como JPEG en SQLite junto con la receta. Se pueden editar recetas; para borrar una que aparece en algún plan, primero hay que quitarla de ese plan.
 
-Referencias oficiales: [Web Services](https://render.com/docs/web-services), [discos persistentes](https://render.com/docs/disks) y [versión de Node](https://render.com/docs/node-version).
+Cada comida o cena del plan se puede marcar como cocinada desde su fecha hasta hoy: suma **20 puntos** una vez: 10 por cocinar y 10 por cumplir el plan. Un día sin pedido a domicilio se registra explícitamente una vez por hogar y día y suma **5 puntos**. El gasto evitado es una estimación opcional, separada del dinero realmente ahorrado. Estas acciones también cuentan en el proyecto común y la meta semanal.
 
-## Despliegue HTTPS en un servidor propio
+El plan semanal permite elegir una receta para la **comida y la cena** de cada día, navegar entre semanas y dejar huecos sin planificar. La lista **Compra** se genera automáticamente a partir de las recetas de esa semana: si una receta aparece dos veces, sus ingredientes cuentan dos veces. Los nombres iguales se agrupan sin distinguir mayúsculas ni tildes; `kg` se suma con `g`, y `l` con `ml`. Las casillas compradas se comparten entre usuarios y se conservan por semana. Si al editar el plan aumenta la cantidad de un ingrediente marcado, vuelve a quedar pendiente.
 
-No hay un hosting contratado/configurado ni una URL publicada en esta entrega. `localhost` en un móvil apunta a ese móvil, no al equipo donde está SQLite. Para compartir desde un servidor propio con la configuración siguiente hace falta **un servidor accesible, dominio con DNS, HTTPS y disco persistente**. No publiques solo `dist/`: necesita su API y SQLite. Para usar el subdominio de Render, sigue la sección anterior.
+La compra ofrece búsqueda y filtros de pendientes o todos los productos. Usa dos columnas en escritorio y una en pantallas estrechas, con casillas grandes para marcar desde el móvil.
 
-Se incluyen Dockerfile y Docker Compose con Caddy como terminador TLS. En un servidor con Docker Compose:
+## Ahorro y objetivos
 
-1. Copia el proyecto sin `node_modules`, `.env` ni `data` privados, o transfiere una copia de datos de forma privada si ya contiene vuestro historial.
-2. Configura el DNS del dominio hacia la IP pública del servidor y permite TCP 80/443. El puerto de Node no se expone públicamente.
-3. Crea `.env` con estas líneas, sustituyendo el dominio de ejemplo por el real:
+La sección **Ahorro y objetivos** muestra tres hitos compartidos: **1.000 € Viaje express**, **3.000 € Disney París** y **10.000 € Disney worldwide**. Los objetivos avanzan solo con movimientos de dinero registrados por los usuarios; también se pueden registrar retiradas. La pantalla distingue ese saldo de la estimación de pedidos evitados y muestra el historial de aportaciones.
 
-   ```dotenv
-   PUBLIC_URL=https://casa.tu-dominio.example
-   CASA_DOMAIN=casa.tu-dominio.example
-   ```
+Cada objetivo desbloquea el plan de reservas al llegar al **60 %**. Desde ese punto se pueden marcar fechas, billetes, hotel y presupuesto; la app registra el avance, sin realizar reservas por sí misma. La primera aportación positiva al ahorro de cada semana suma **10 puntos**, con independencia del importe. Las aportaciones siguientes de esa semana no duplican el bonus.
 
-4. Desde la raíz del proyecto:
+## Centro de mando y juego compartido
 
-   ```bash
-   docker compose --env-file .env -f deploy/compose.yaml up -d --build
-   docker compose --env-file .env -f deploy/compose.yaml logs --tail=80
-   ```
+El inicio muestra limpieza, comidas, compra y ahorro. Cuatro hábitos diarios sirven de guía compartida sin asignar tareas. La pestaña **Hogar Co-op** añade tres misiones por semana: esfuerzo de limpieza y tareas esenciales acordadas, una misión de cocina y una de equipo. Podéis elegir para cocina entre planificar cinco comidas con la compra lista o siete días sin pedido con cinco comidas caseras. Para equipo podéis elegir entre una reunión con aporte real al ahorro o una limpieza conjunta. Cada misión conseguida da **una llave**, con un máximo de tres por semana; algunos logros extraordinarios dan otra llave una sola vez. El objetivo de XP y las tareas esenciales se pueden ajustar sin asignar responsables.
 
-5. Comprueba `https://TU_DOMINIO_REAL/entrada` en ambos móviles, elige una persona en cada uno y completa una tarea. En el segundo, recupera el foco o espera hasta 15 segundos. Verifica el historial compartido antes de grabar la etiqueta.
+El álbum contiene logros persistentes de limpieza, cocina, ahorro y equipo. Un sticker desbloqueado puede elegirse como emblema de la app y se ve igual en ambos perfiles. También se pueden registrar gestos concretos que suelen quedar invisibles: revisar despensa, preparar raciones, aprovechar alimentos, compras con lista y una reunión de equipo. Cada tipo tiene un límite diario o semanal para evitar acumular XP repitiendo registros. La limpieza conjunta registrada como sesión reparte su XP entre ambos; si corresponde a una tarea de la pool, usad **«La hicimos juntos»** para no anotar el mismo trabajo dos veces.
 
-SQLite funciona en un único servidor/proceso con su volumen. No montes el archivo sobre almacenamiento efímero ni ejecutes réplicas independientes. Caddy necesita acceso público al dominio para emitir certificados. La configuración de contenedores no se ha ejecutado en este entorno.
+Una receta se puede valorar con una a cinco estrellas después de cocinarla. El logro **Recetario en expansión** exige cocinar y valorar cinco recetas distintas; las valoraciones y la foto permanecen en la copia de seguridad.
 
-Si ya dispones de proxy HTTPS, también puedes ejecutar `npm ci`, `npm run build` y `npm start`, con las variables de producción y un supervisor de procesos. Haz que el proxy reenvíe todas las rutas, incluida `/api/`, al puerto 4310 y conserva `data/` entre reinicios.
+**Carga compartida** se desbloquea cuando ambas personas confirman dos semanas que el reparto fue justo según su disponibilidad y se hizo al menos la mitad del esfuerzo acordado. No se impone una proporción entre perfiles. **Objetivo protegido** permite acordar una meta de ahorro mensual opcional; si el mes termina con ahorro neto suficiente, concede dos llaves una vez al cerrarlo. Así una retirada posterior durante el mes puede reducir el progreso antes de entregar el premio. Ninguna meta de dinero viene preasignada.
 
-## NFC, QR e instalación
+Las llaves se canjean por planes compartidos, gratuitos o con un coste declarado. Los planes con coste necesitan saldo en el **fondo de disfrute**, que se alimenta mediante traspasos desde el ahorro real registrado: reducen el objetivo de ahorro en la misma cantidad y están limitados inicialmente al 25 % de las aportaciones positivas del mes. La app registra el canje y el coste; no hace compras ni reservas. El descanso básico nunca depende de las llaves.
 
-En Ajustes se muestran el enlace real configurado y su QR; en desarrollo se identifica como dirección local. Instala la PWA desde la función «Añadir a pantalla de inicio» del navegador como acceso alternativo.
+## Datos y copias
 
-Para la nevera usa una etiqueta **on-metal**. En una app de escritura NFC:
+La base SQLite está en `data/casa.sqlite`, o en la ruta indicada por `DATABASE_PATH`. El endpoint `GET /api/export` entrega una copia JSON del plan, las pools, las tareas cogidas, los puntos, el historial, las recetas con fotos, el plan de comidas, la compra, el ahorro, las misiones, llaves, logros, fondo y canjes. El endpoint de importación acepta también copias antiguas sin datos de pools, comidas, ahorro o Hogar Co-op.
 
-1. Añade un registro **NDEF URI** con la URL HTTPS terminada en `/entrada` que muestra Ajustes.
-2. Graba únicamente esa URL, sin contraseña ni token de sesión.
-3. Pruébala en ambos móviles y abre la misma URL manualmente para comparar el comportamiento.
-4. Verifica antes de bloquear la etiqueta; bloquear suele impedir editarla posteriormente. La aplicación no bloquea etiquetas.
+La aplicación no tiene contraseñas: cualquier persona con acceso a su dirección puede consultar o modificar los datos. Para móviles en la red local, configura `HOST=0.0.0.0` y abre la dirección de red que imprime el servidor. El equipo que aloja SQLite debe permanecer encendido. Para usar la PWA desde una IP local se necesita un origen seguro (HTTPS); el tablero compartido funciona por HTTP local.
 
-El móvil puede mostrar una notificación que hay que tocar para abrir la web. No se promete apertura automática. No hay pantalla de login. La selección de persona se muestra siempre al entrar por `/entrada`.
+## Despliegue
 
-## Persistencia y copias de seguridad
+El proyecto incluye `Dockerfile`, configuración de Caddy en `deploy/` y `render.yaml`. En producción, sirve la app con `npm start`, conserva `DATABASE_PATH` en un volumen persistente y configura `PUBLIC_URL` con el origen HTTPS real. SQLite está diseñado aquí para una sola instancia del servidor.
 
-Los datos residen en `data/casa.sqlite` (o `DATABASE_PATH`), con WAL y claves foráneas. En Docker se usa el volumen `casa_data`; reiniciar/reconstruir no lo borra. **No uses `docker compose down -v` para una actualización**, porque elimina volúmenes.
+En Render, crea o sincroniza el servicio desde `render.yaml`: usa el plan de pago `starter`, monta un disco de 1 GB en `/var/data` y guarda SQLite en `/var/data/casa.sqlite`. El control de salud `/api/health` consulta esa base. El arranque en Render rechaza una ruta de base de datos ausente, relativa o fuera de `/var/data`, para evitar que el historial y los puntos se guarden accidentalmente en el almacenamiento temporal. El disco es compartido por Iván e Irene dentro de la misma instancia; sus acciones se atribuyen al perfil elegido.
 
-La opción Exportar JSON de Ajustes produce una copia portable del plan, personas, zonas, ocurrencias, eventos y ausencias. Importar reemplaza el contenido del hogar después de la vista previa; exporta antes la situación actual si quieres poder volver atrás. Las sesiones y el hash de contraseña no se importan.
+Si ya tienes datos en un servicio Render sin disco, descarga antes la copia desde `/api/export` y, después del cambio de servicio, impórtala desde la app. Render no copia automáticamente los archivos del sistema temporal al nuevo disco. En un servicio creado manualmente, configura el mismo plan, el disco y `DATABASE_PATH=/var/data/casa.sqlite` en su panel. La persistencia real del servicio publicado debe comprobarse tras el despliegue con los dos perfiles y un reinicio del servicio.
 
-Para una copia SQL completa en caliente, si tienes el CLI de SQLite:
-
-```bash
-mkdir -p backups
-sqlite3 data/casa.sqlite ".backup 'backups/casa.sqlite'"
-```
-
-Alternativamente, detén el servidor y copia el archivo SQLite y, si existen, sus archivos `-wal` y `-shm` como un conjunto. Copia de forma privada `.env` por separado. No copies únicamente el archivo principal mientras se esté escribiendo en WAL. Conserva backups fuera del equipo. Para restaurar SQL, detén la app, restaura el conjunto consistente, ajusta permisos y arranca de nuevo; los datos del hogar seguirán disponibles; las tablas de sesiones antiguas, si existieran, se ignoran.
-
-## Pruebas y estado de verificación
+## Comprobación
 
 ```bash
 npm run build
 npm test
-```
-
-La compilación TypeScript/Vite y **28 pruebas automatizadas** pasan. Cubren rotación, cambio de año, Madrid/horario de verano, recurrencias, generación idempotente, acciones, conflictos, agrupación sin inflar actividad, movimiento antes/después de generar semana, snapshots, persistencia tras cerrar SQLite, dos clientes sin cookies, validación de origen, idempotencia, ausencias, importación/exportación, acceso LAN, retirada de las rutas de login, asignaciones fijas, carga equilibrada durante cuatro semanas y registro único del salón sin completar otras zonas.
-
-Las pruebas de API ejecutan el manejador HTTP real con streams en memoria y SQLite temporal: no sustituyen el servidor por respuestas inventadas. Se ha verificado el arranque en segundo plano mediante `npm run serve` y su continuidad mediante `npm run serve -- status`, con respuestas HTTP 200 reales de `/entrada` y `/api/state`. La verificación con navegador y móviles reales queda pendiente. No hay despliegue público.
-
-Se deja además una prueba de navegador reproducible, con servidor y base temporal, sin modificar vuestro hogar:
-
-```bash
-npx playwright install chromium
 npm run test:browser
 ```
 
-Comprueba `/entrada` sin login → persona → completar → otro navegador; recarga; `/entrada` con perfil recordado; copia offline sin escrituras; QR; ausencia de desbordamiento a 390 px; capturas móvil y escritorio. Puede usarse un Chromium instalado con `CHROMIUM_PATH=/ruta/al/chromium npm run test:browser`. **Esta prueba queda pendiente de ejecutar en un host que permita puertos y navegador.** También quedan por comprobar NFC físico, instalación en iOS/Android y el despliegue HTTPS real.
-
-No se implementan push, autenticación individual ni escritura offline. La edición individual permite cambiar título, pasos, zona y tiempo; la frecuencia pertenece a la plantilla futura. Las ausencias no incluyen aún un flujo de cancelación desde la interfaz.
+La prueba de navegador necesita Chromium y permiso para abrir un puerto de loopback. Las pruebas de API usan SQLite temporal y ejercitan el manejador HTTP sin abrir un puerto.

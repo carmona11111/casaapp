@@ -17,6 +17,7 @@ async function request(path,{method='GET',data,cookie='',key=randomUUID(),origin
  const done=new Promise((resolve,reject)=>{res.on('finish',resolve);res.on('error',reject);});server.emit('request',req,res);await done;const text=Buffer.concat(chunks).toString();return {status,headers,data:headers['content-type']?.includes('json')?JSON.parse(text):text};
 }
 test('Acceso directo sin credenciales y bloqueo de escrituras desde otro origen',async()=>{
+ assert.deepEqual((await request('/api/health')).data,{ok:true});
  const result=await request('/api/state');
  assert.equal(result.status,200);
  assert.equal(result.headers['set-cookie'],undefined);
@@ -33,7 +34,7 @@ test('Las rutas de login desaparecen y las cookies antiguas no bloquean el acces
  assert.equal((await request('/api/logout',{method:'POST',data:{}})).status,404);
  assert.equal((await request('/api/state',{cookie:'casa_session=expired'})).status,200);
 });
-test('Entrada, manifiesto y recursos estáticos disponibles en el mismo servidor',async()=>{const entry=await request('/entrada');assert.equal(entry.status,200);assert.match(entry.data,/Casa al día/);const manifest=await request('/manifest.webmanifest');assert.equal(manifest.data.start_url,'/');assert.equal(manifest.data.icons.length,2);});
+test('Entrada, manifiesto y arte del castillo disponibles en el mismo servidor',async()=>{const entry=await request('/entrada');assert.equal(entry.status,200);assert.match(entry.data,/Hogar Encantado/);const manifest=await request('/manifest.webmanifest');assert.equal(manifest.data.name,'Hogar Encantado');assert.equal(manifest.data.start_url,'/');assert.equal(manifest.data.icons.length,2);for(const path of ['/mickey.png','/tio-gilito.png','/castillo/04_iluminacion.png','/0eefb429-5aa8-4479-940a-0c638fd9f3da.png']){const asset=await request(path);assert.equal(asset.status,200,path);assert.equal(asset.headers['content-type'],'image/png');}});
 
 test('El acceso directo acepta el origen LAN y devuelve su enlace de entrada',async()=>{
  const origin='http://192.168.190.50:4310';
@@ -41,4 +42,238 @@ test('El acceso directo acepta el origen LAN y devuelve su enlace de entrada',as
  assert.equal(state.status,200);
  assert.equal(state.headers['set-cookie'],undefined);
  assert.equal(state.data.entryUrl,origin+'/entrada');
+});
+test('Pool compartida: coger, completar, sumar puntos y exportar el progreso',async()=>{
+ const initial=(await request('/api/pool')).data;
+ const task=initial.tasks.find(t=>t.id==='t2');
+ assert.equal(task.claimed_by,null);
+ assert.equal(task.available,true);
+ let response=await request('/api/pool/action',{method:'POST',data:{template_id:task.id,actor:'ivan',action:'claim'}});
+ assert.equal(response.status,200);
+ response=await request('/api/pool/action',{method:'POST',data:{template_id:task.id,actor:'person2',action:'claim'}});
+ assert.equal(response.status,409);
+ response=await request('/api/pool/action',{method:'POST',data:{template_id:task.id,actor:'ivan',action:'complete'}});
+ assert.equal(response.status,200);
+ const after=(await request('/api/pool')).data;
+ assert.equal(after.tasks.find(t=>t.id===task.id).available,false);
+ assert.equal(after.completions.find(c=>c.template_id===task.id).person_id,'ivan');
+ assert.ok(after.totals.find(t=>t.person_id==='ivan').points>=task.points);
+ const exported=(await request('/api/export')).data;
+ assert.equal(exported.poolData.completions.find(c=>c.template_id===task.id).points,task.points);
+});
+test('Organizar permite crear tareas sin responsable y editar su pool',async()=>{
+ const before=(await request('/api/pool')).data;
+ const zone=before.zones[0];
+ const created=await request('/api/pool/task',{method:'POST',data:{actor:'ivan',title:'Ordenar recibidor',steps:['Guardar zapatos'],zone_id:zone.id,minutes:10,pool:'every3',active:1}});
+ assert.equal(created.status,200);
+ const after=(await request('/api/pool')).data;
+ const task=after.tasks.find(t=>t.title==='Ordenar recibidor');
+ assert.equal(task.claimed_by,null);
+ assert.equal(task.pool,'every3');
+ const updated=await request('/api/pool/task',{method:'POST',data:{actor:'person2',id:task.id,title:'Ordenar entrada',steps:['Guardar zapatos'],zone_id:zone.id,minutes:15,pool:'weekly',active:1}});
+ assert.equal(updated.status,200);
+ assert.equal((await request('/api/pool')).data.tasks.find(t=>t.id===task.id).pool,'weekly');
+});
+test('Comidas: recetario vacío, plan semanal y compra agregada con casillas persistentes',async()=>{
+ const week=localDate();
+ const start=addDays(week,-((new Date(week+'T12:00:00Z').getUTCDay()+6)%7));
+ const initial=await request(`/api/meals?week=${start}`);
+ assert.equal(initial.status,200);
+ assert.deepEqual(initial.data.recipes,[]);
+ assert.deepEqual(initial.data.shopping,[]);
+ const photo='data:image/jpeg;base64,/9j/2Q==';
+ const pasta={actor:'ivan',name:'Pasta con tomate',photo,ingredients:[{name:'Tomate',quantity:2,unit:'ud'},{name:'Pasta',quantity:200,unit:'g'},{name:'Harina',quantity:0.5,unit:'kg'}]};
+ const salad={actor:'person2',name:'Ensalada',photo:null,ingredients:[{name:'tomate',quantity:1,unit:'ud'},{name:'Harina',quantity:250,unit:'g'}]};
+ assert.equal((await request('/api/meals/recipe',{method:'POST',data:pasta})).status,200);
+ assert.equal((await request('/api/meals/recipe',{method:'POST',data:salad})).status,200);
+ let state=(await request(`/api/meals?week=${start}`)).data;
+ assert.equal(state.recipes.length,2);
+ assert.equal(state.recipes.find(r=>r.name==='Pasta con tomate').photo,photo);
+ const pastaId=state.recipes.find(r=>r.name==='Pasta con tomate').id;
+ const saladId=state.recipes.find(r=>r.name==='Ensalada').id;
+ for(const [date,slot,recipe_id] of [[start,'lunch',pastaId],[start,'dinner',pastaId],[addDays(start,1),'dinner',saladId]]){
+  const saved=await request('/api/meals/plan',{method:'POST',data:{actor:'ivan',date,slot,recipe_id}});
+  assert.equal(saved.status,200,JSON.stringify(saved.data));
+ }
+ state=(await request(`/api/meals?week=${start}`)).data;
+ assert.equal(state.plan.length,3);
+ assert.equal(state.shopping.find(x=>x.name.toLowerCase()==='tomate').quantity,5);
+ assert.equal(state.shopping.find(x=>x.name==='Harina').quantity,1250);
+ const tomato=state.shopping.find(x=>x.name.toLowerCase()==='tomate');
+ assert.equal((await request('/api/meals/check',{method:'POST',data:{actor:'person2',week_start:start,key:tomato.key,checked:true}})).status,200);
+ assert.equal((await request(`/api/meals?week=${start}`)).data.shopping.find(x=>x.key===tomato.key).checked,true);
+ assert.equal((await request('/api/meals/recipe',{method:'POST',data:{...pasta,id:pastaId,ingredients:[{name:'Tomate',quantity:4,unit:'ud'}]}})).status,200);
+ state=(await request(`/api/meals?week=${start}`)).data;
+ assert.equal(state.shopping.find(x=>x.key===tomato.key).quantity,9);
+ assert.equal(state.shopping.find(x=>x.key===tomato.key).checked,false);
+ assert.equal((await request('/api/meals/plan',{method:'POST',data:{actor:'ivan',date:start,slot:'lunch',recipe_id:null}})).status,200);
+ assert.equal((await request(`/api/meals?week=${start}`)).data.plan.length,2);
+});
+test('Comidas y fotos sobreviven la exportación e importación',async()=>{
+ const exported=(await request('/api/export')).data;
+ assert.equal(exported.mealsData.recipes.length,2);
+ assert.equal(exported.mealsData.plan.length,2);
+ const preview=await request('/api/import/preview',{method:'POST',data:exported});
+ assert.equal(preview.status,200,JSON.stringify(preview.data));
+ const imported=await request('/api/import',{method:'POST',data:{data:exported,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}});
+ assert.equal(imported.status,200,JSON.stringify(imported.data));
+ const after=(await request('/api/export')).data;
+ assert.deepEqual(after.mealsData,exported.mealsData);
+});
+test('La compra es independiente por semana y una receta planificada no se borra por accidente',async()=>{
+ const mondayDate=addDays(localDate(),-((new Date(localDate()+'T12:00:00Z').getUTCDay()+6)%7));
+ const nextWeek=addDays(mondayDate,7);
+ const current=(await request(`/api/meals?week=${mondayDate}`)).data;
+ assert.ok(current.shopping.length>0);
+ const next=(await request(`/api/meals?week=${nextWeek}`)).data;
+ assert.deepEqual(next.plan,[]);
+ assert.deepEqual(next.shopping,[]);
+ const plannedId=current.plan[0].recipe_id;
+ const denied=await request('/api/meals/recipe/delete',{method:'POST',data:{actor:'ivan',id:plannedId}});
+ assert.equal(denied.status,409);
+ const invalid=await request('/api/meals/recipe',{method:'POST',data:{actor:'ivan',name:'Foto insegura',photo:'data:image/svg+xml;base64,PHN2Zz4=',ingredients:[{name:'Agua',quantity:1,unit:'l'}]}});
+ assert.equal(invalid.status,400);
+});
+
+test('Cocinar el plan y evitar pedidos suma puntos una sola vez; el ahorro real es independiente',async()=>{
+ const today=localDate();const week=addDays(today,-((new Date(today+'T12:00:00Z').getUTCDay()+6)%7));
+ const before=(await request('/api/pool')).data;
+ const beforePoints=before.totals.reduce((n,row)=>n+row.points,0);
+ const created=await request('/api/meals/recipe',{method:'POST',data:{actor:'ivan',name:'Cena del objetivo',photo:null,ingredients:[{name:'Patata',quantity:2,unit:'ud'}]}});
+ assert.equal(created.status,200);
+ const recipe=(await request(`/api/meals?week=${week}`)).data.recipes.find(r=>r.name==='Cena del objetivo');
+ assert.equal((await request('/api/meals/rate',{method:'POST',data:{actor:'ivan',recipe_id:recipe.id,rating:5}})).status,409);
+ assert.equal((await request('/api/meals/plan',{method:'POST',data:{actor:'ivan',date:today,slot:'lunch',recipe_id:recipe.id}})).status,200);
+ assert.equal((await request('/api/meals/complete',{method:'POST',data:{actor:'ivan',date:today,slot:'lunch',completed:true}})).status,200);
+ assert.equal((await request('/api/meals/rate',{method:'POST',data:{actor:'person2',recipe_id:recipe.id,rating:5}})).status,200);
+ assert.equal((await request(`/api/meals?week=${week}`)).data.ratings.find(r=>r.recipe_id===recipe.id).rating,5);
+ assert.equal((await request('/api/meals/complete',{method:'POST',data:{actor:'person2',date:today,slot:'lunch',completed:true}})).status,409);
+ assert.equal((await request('/api/meals/plan',{method:'POST',data:{actor:'ivan',date:today,slot:'lunch',recipe_id:null}})).status,409);
+ assert.equal((await request('/api/meals/no-delivery',{method:'POST',data:{actor:'person2',date:today,done:true,saved_cents:1800}})).status,200);
+ assert.equal((await request('/api/meals/no-delivery',{method:'POST',data:{actor:'ivan',date:today,done:true,saved_cents:1800}})).status,409);
+ const after=(await request('/api/pool')).data;
+ assert.equal(after.totals.reduce((n,row)=>n+row.points,0),beforePoints+25);
+ assert.equal(after.gamification.daily.find(item=>item.id==='meal').done,true);
+ assert.equal(after.gamification.daily.find(item=>item.id==='delivery').done,true);
+ assert.equal(after.gamification.badges.find(item=>item.id==='first_meal').earned,true);
+ assert.equal((await request('/api/savings')).data.avoided_cents,1800);
+ assert.equal((await request('/api/savings')).data.total_cents,0);
+ assert.equal((await request('/api/savings/add',{method:'POST',data:{actor:'ivan',amount_cents:100000,note:'Primer viaje'}})).status,200);
+ assert.equal((await request('/api/pool')).data.totals.reduce((n,row)=>n+row.points,0),beforePoints+35);
+ assert.equal((await request('/api/pool')).data.gamification.savings.weeklyReward,true);
+ const savings=(await request('/api/savings')).data;
+ assert.equal(savings.total_cents,100000);assert.equal(savings.goals[0].amount_cents,100000);
+ assert.equal((await request('/api/savings/delete',{method:'POST',data:{actor:'person2',id:savings.entries[0].id}})).status,409);
+ const exported=(await request('/api/export')).data;
+ assert.equal(exported.mealsData.completed.length,1);assert.equal(exported.mealsData.noDelivery.length,1);assert.equal(exported.savingsData.length,1);
+ assert.equal(exported.mealsData.ratings.length,1);
+ const preview=await request('/api/import/preview',{method:'POST',data:exported});assert.equal(preview.status,200,JSON.stringify(preview.data));
+ assert.equal((await request('/api/import',{method:'POST',data:{data:exported,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}})).status,200);
+ assert.equal((await request('/api/savings')).data.total_cents,100000);
+ assert.equal((await request('/api/meals/complete',{method:'POST',data:{actor:'person2',date:today,slot:'lunch',completed:false}})).status,409);
+ assert.equal((await request('/api/meals/complete',{method:'POST',data:{actor:'ivan',date:today,slot:'lunch',completed:false}})).status,200);
+ assert.equal((await request(`/api/meals?week=${week}`)).data.ratings.some(r=>r.recipe_id===recipe.id),false);
+ assert.equal((await request('/api/meals/no-delivery',{method:'POST',data:{actor:'person2',date:today,done:false,saved_cents:0}})).status,200);
+});
+
+test('Los preparativos de viaje se desbloquean al 60% y sobreviven a la copia',async()=>{
+ const before=(await request('/api/savings')).data;
+ assert.equal(before.total_cents,100000);
+ assert.equal((await request('/api/savings/preparation',{method:'POST',data:{actor:'ivan',goal_cents:300000,item_key:'transport',checked:true}})).status,409);
+ const pointsBefore=(await request('/api/pool')).data.totals.reduce((sum,row)=>sum+row.points,0);
+ assert.equal((await request('/api/savings/add',{method:'POST',data:{actor:'ivan',amount_cents:80000,note:'Fondo para billetes'}})).status,200);
+ const after=(await request('/api/savings')).data;
+ assert.equal(after.total_cents,180000);
+ assert.equal((await request('/api/pool')).data.totals.reduce((sum,row)=>sum+row.points,0),pointsBefore,'dos aportaciones la misma semana no duplican bonus');
+ assert.equal((await request('/api/savings/preparation',{method:'POST',data:{actor:'person2',goal_cents:300000,item_key:'transport',checked:true}})).status,200);
+ assert.equal((await request('/api/savings')).data.preparation.find(item=>item.item_key==='transport').checked_by,'person2');
+ const copy=(await request('/api/export')).data;
+ assert.equal(copy.savingsPreparation.length,1);
+ const preview=await request('/api/import/preview',{method:'POST',data:copy});assert.equal(preview.status,200,JSON.stringify(preview.data));
+ assert.equal((await request('/api/import',{method:'POST',data:{data:copy,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}})).status,200);
+ assert.equal((await request('/api/savings')).data.preparation.length,1);
+ assert.equal((await request('/api/savings/add',{method:'POST',data:{actor:'ivan',amount_cents:-1,note:'Ajuste'}})).status,200);
+ assert.equal((await request('/api/savings/preparation',{method:'POST',data:{actor:'ivan',goal_cents:300000,item_key:'stay',checked:true}})).status,409);
+ assert.equal((await request('/api/savings/preparation',{method:'POST',data:{actor:'ivan',goal_cents:300000,item_key:'transport',checked:false}})).status,200);
+});
+
+test('Hogar Co-op sincroniza gestos entre perfiles y conserva llaves y álbum en la copia',async()=>{
+ const week=(await request('/api/coop')).data.weekStart;
+ const initial=(await request('/api/pool',{ip:'movil-ivan'})).data;
+ const plan=await request('/api/coop/plan',{method:'POST',ip:'movil-ivan',data:{actor:'ivan',week_start:week,target_xp:150,essentials:['t1'],kitchen_mode:'delivery',team_mode:'joint'}});
+ assert.equal(plan.status,200,JSON.stringify(plan.data));
+ const gesture=await request('/api/coop/event',{method:'POST',ip:'movil-irene',data:{actor:'person2',kind:'review',amount:10}});
+ assert.equal(gesture.status,200,JSON.stringify(gesture.data));
+ assert.equal((await request('/api/coop/event',{method:'POST',ip:'movil-irene',data:{actor:'person2',kind:'joint_clean',amount:20}})).status,200);
+ assert.equal((await request('/api/coop/sticker',{method:'POST',ip:'movil-ivan',data:{actor:'ivan',badge_id:'joint_first'}})).status,200);
+ const other=(await request('/api/pool',{ip:'movil-ivan'})).data;
+ assert.equal(other.coop.events[0].person_id,'person2');
+ assert.equal(other.coop.plan.essentials[0],'t1');
+ assert.ok(other.totals.find(x=>x.person_id==='person2').points>(initial.totals.find(x=>x.person_id==='person2')?.points||0));
+ const exported=(await request('/api/export')).data;
+ assert.equal(exported.coopData.events.length,2);
+ assert.equal(exported.coopData.profile.badge_id,'joint_first');
+ assert.equal(exported.coopData.modes[0].kitchen_mode,'delivery');
+ const preview=await request('/api/import/preview',{method:'POST',data:exported});
+ assert.equal(preview.status,200,JSON.stringify(preview.data));
+ const restored=await request('/api/import',{method:'POST',data:{data:exported,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}});
+ assert.equal(restored.status,200,JSON.stringify(restored.data));
+ const after=(await request('/api/coop',{ip:'movil-irene'})).data;
+ assert.equal(after.events[0].person_id,'person2');
+ assert.equal(after.plan.essentials[0],'t1');
+ assert.equal(after.plan.team_mode,'joint');
+ assert.equal(after.selectedSticker.id,'joint_first');
+});
+
+test('Una tarea grande compartida reparte XP sin duplicarla y sobrevive a exportar e importar',async()=>{
+ const before=(await request('/api/pool')).data;
+ const created=await request('/api/pool/task',{method:'POST',data:{actor:'ivan',title:'Ordenar trastero juntos',steps:['Ordenar'],zone_id:before.zones[0].id,minutes:30,pool:'weekly',active:1}});
+ assert.equal(created.status,200,JSON.stringify(created.data));
+ const task=(await request('/api/pool')).data.tasks.find(x=>x.title==='Ordenar trastero juntos');
+ assert.equal((await request('/api/pool/action',{method:'POST',data:{actor:'ivan',template_id:task.id,action:'claim'}})).status,200);
+ const completed=await request('/api/pool/action',{method:'POST',data:{actor:'ivan',template_id:task.id,action:'complete',with_person:'person2'}});
+ assert.equal(completed.status,200,JSON.stringify(completed.data));
+ const after=(await request('/api/pool')).data;
+ assert.equal(after.tasks.find(x=>x.id===task.id).last.shared_with,'person2');
+ assert.equal(after.totals.reduce((n,x)=>n+x.points,0)-before.totals.reduce((n,x)=>n+x.points,0),20);
+ const copy=(await request('/api/export')).data;
+ assert.equal(copy.coopData.shares.length,1);
+ const preview=await request('/api/import/preview',{method:'POST',data:copy});
+ assert.equal(preview.status,200,JSON.stringify(preview.data));
+ assert.equal((await request('/api/import',{method:'POST',data:{data:copy,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}})).status,200);
+ assert.equal((await request('/api/pool')).data.tasks.find(x=>x.id===task.id).last.shared_with,'person2');
+});
+
+test('El fondo real conserva el vínculo con el ahorro y bloquea el borrado del traspaso',async()=>{
+ assert.equal((await request('/api/savings/add',{method:'POST',data:{actor:'ivan',amount_cents:10000,note:'Presupuesto verificado'}})).status,200);
+ assert.equal((await request('/api/coop/transfer',{method:'POST',data:{actor:'ivan',amount_cents:2500}})).status,200);
+ const transfer=(await request('/api/savings')).data.entries.find(x=>x.note==='Traspaso al fondo de disfrute');
+ assert.equal((await request('/api/savings/delete',{method:'POST',data:{actor:'ivan',id:transfer.id}})).status,409);
+ const copy=(await request('/api/export')).data;
+ assert.equal(copy.coopData.transfers.length,1);
+ const preview=await request('/api/import/preview',{method:'POST',data:copy});
+ assert.equal(preview.status,200,JSON.stringify(preview.data));
+ assert.equal((await request('/api/import',{method:'POST',data:{data:copy,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}})).status,200);
+ assert.equal((await request('/api/coop')).data.fund.balance_cents,2500);
+ assert.equal((await request('/api/savings/delete',{method:'POST',data:{actor:'ivan',id:transfer.id}})).status,409);
+});
+
+test('El objetivo mensual y el acuerdo de reparto son compartidos y restaurables',async()=>{
+ const before=(await request('/api/coop')).data.keys.balance;
+ assert.equal((await request('/api/coop/monthly',{method:'POST',data:{actor:'ivan',target_cents:1000}})).status,200);
+ assert.equal((await request('/api/coop/fair',{method:'POST',data:{actor:'ivan'}})).status,200);
+ assert.equal((await request('/api/coop/fair',{method:'POST',data:{actor:'person2'}})).status,200);
+ const state=(await request('/api/coop')).data;
+ assert.equal(state.monthly.reached,true);
+ assert.equal(state.monthly.earned,false);
+ assert.equal(state.fair.confirmed_by.length,2);
+ assert.equal(state.keys.balance,before);
+ const copy=(await request('/api/export')).data;
+ assert.equal(copy.coopData.monthlyGoals.length,1);
+ assert.equal(copy.coopData.monthlyAwards.length,0);
+ assert.equal(copy.coopData.fairVotes.length,2);
+ const preview=await request('/api/import/preview',{method:'POST',data:copy});
+ assert.equal(preview.status,200,JSON.stringify(preview.data));
+ assert.equal((await request('/api/import',{method:'POST',data:{data:copy,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}})).status,200);
+ assert.equal((await request('/api/coop')).data.keys.balance,state.keys.balance);
 });

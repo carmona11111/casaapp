@@ -1,14 +1,16 @@
-# Blueprint para probar la app en el plan gratuito de Render.
-# SQLite es temporal: sus datos se pierden al reiniciar o redesplegar.
-# En servicios creados manualmente, cambia DATABASE_PATH en Environment.
+# SQLite y sus archivos WAL deben vivir en el disco persistente de Render.
 services:
   - type: web
     name: casaapp
     runtime: node
-    plan: free
+    plan: starter
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
-    healthCheckPath: /entrada
+    healthCheckPath: /api/health
+    disk:
+      name: casa-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: "24"
@@ -16,5 +18,7 @@ services:
         value: production
       - key: HOST
         value: 0.0.0.0
+      - key: PUBLIC_URL
+        value: https://casaapp-5tky.onrender.com
       - key: DATABASE_PATH
-        value: ./data/casa.sqlite
+        value: /var/data/casa.sqlite
