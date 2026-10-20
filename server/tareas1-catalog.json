@@ -1,0 +1,616 @@
+[
+  {
+    "id": "tareas1-01-1",
+    "title": "Hacer la cama y ventilar habitación 1",
+    "zone": "z2",
+    "minutes": 5,
+    "pool": "daily",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 1,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "5 min"
+  },
+  {
+    "id": "tareas1-01-2",
+    "title": "Hacer la cama y ventilar habitación 2",
+    "zone": "z3",
+    "minutes": 5,
+    "pool": "daily",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 1,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "5 min"
+  },
+  {
+    "id": "tareas1-01-3",
+    "title": "Hacer la cama y ventilar habitación 3",
+    "zone": "z4",
+    "minutes": 5,
+    "pool": "daily",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 1,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "5 min"
+  },
+  {
+    "id": "tareas1-02",
+    "title": "Recoger ropa, objetos y zonas comunes",
+    "zone": "z1",
+    "minutes": 10,
+    "pool": "daily",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 2,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "10 min"
+  },
+  {
+    "id": "tareas1-03",
+    "title": "Lavar los platos o cargar/vaciar el lavavajillas",
+    "zone": "z0",
+    "minutes": 10,
+    "pool": "daily",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 3,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "10 min"
+  },
+  {
+    "id": "tareas1-04",
+    "title": "Limpiar encimera, fogones y mesa después de cocinar",
+    "zone": "z0",
+    "minutes": 8,
+    "pool": "daily",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 4,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "5–10 min"
+  },
+  {
+    "id": "tareas1-05",
+    "title": "Retirar heces y grumos de los dos areneros, repasándolos mañana y noche",
+    "zone": "z7",
+    "minutes": 8,
+    "pool": "daily",
+    "pet": true,
+    "steps": [],
+    "sourceRow": 5,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "5–10 min"
+  },
+  {
+    "id": "tareas1-06",
+    "title": "Barrer o aspirar la arena alrededor de los areneros",
+    "zone": "z7",
+    "minutes": 3,
+    "pool": "daily",
+    "pet": true,
+    "steps": [],
+    "sourceRow": 6,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "3 min"
+  },
+  {
+    "id": "tareas1-07",
+    "title": "Lavar los cuencos de comida y renovar el agua de los gatos; lavar el cuenco de agua",
+    "zone": "z0",
+    "minutes": 5,
+    "pool": "daily",
+    "pet": true,
+    "steps": [],
+    "sourceRow": 7,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "5 min"
+  },
+  {
+    "id": "tareas1-08",
+    "title": "Revisar basura y sacar orgánico o residuos de arenero cuando corresponda",
+    "zone": "z0",
+    "minutes": 3,
+    "pool": "daily",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 8,
+    "sourceFrequency": "Diaria",
+    "sourceTime": "3 min"
+  },
+  {
+    "id": "tareas1-09",
+    "title": "Aspirar suelos, especialmente zonas de paso y donde descansan los gatos",
+    "zone": "z9",
+    "minutes": 18,
+    "pool": "every3",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 9,
+    "sourceFrequency": "2–3 veces por semana",
+    "sourceTime": "15–20 min"
+  },
+  {
+    "id": "tareas1-10",
+    "title": "Quitar pelos de sofá, sillas y textiles",
+    "zone": "z1",
+    "minutes": 8,
+    "pool": "every3",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 10,
+    "sourceFrequency": "2–3 veces por semana",
+    "sourceTime": "5–10 min"
+  },
+  {
+    "id": "tareas1-11-1",
+    "title": "Repasar lavabo y WC del baño 1",
+    "zone": "z5",
+    "minutes": 5,
+    "pool": "every3",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 11,
+    "sourceFrequency": "2–3 veces por semana",
+    "sourceTime": "10 min"
+  },
+  {
+    "id": "tareas1-11-2",
+    "title": "Repasar lavabo y WC del baño 2",
+    "zone": "z6",
+    "minutes": 5,
+    "pool": "every3",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 11,
+    "sourceFrequency": "2–3 veces por semana",
+    "sourceTime": "10 min"
+  },
+  {
+    "id": "tareas1-12",
+    "title": "Poner lavadoras, tender, recoger y guardar la ropa",
+    "zone": "z8",
+    "minutes": 18,
+    "pool": "daily",
+    "pet": false,
+    "steps": [
+      "Hazla cuando haya ropa pendiente."
+    ],
+    "sourceRow": 12,
+    "sourceFrequency": "Según necesidad",
+    "sourceTime": "15–20 min activos"
+  },
+  {
+    "id": "tareas1-13-1",
+    "title": "Limpiar a fondo el baño 1",
+    "zone": "z5",
+    "minutes": 20,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [
+      "Limpiar a fondo este baño: WC, lavabo, ducha/bañera, grifos y espejos"
+    ],
+    "sourceRow": 13,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "30–40 min"
+  },
+  {
+    "id": "tareas1-13-2",
+    "title": "Limpiar a fondo el baño 2",
+    "zone": "z6",
+    "minutes": 20,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [
+      "Limpiar a fondo este baño: WC, lavabo, ducha/bañera, grifos y espejos"
+    ],
+    "sourceRow": 13,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "30–40 min"
+  },
+  {
+    "id": "tareas1-14",
+    "title": "Fregar los suelos",
+    "zone": "z7",
+    "minutes": 18,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 14,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "15–20 min"
+  },
+  {
+    "id": "tareas1-15",
+    "title": "Quitar el polvo de muebles y superficies de las tres habitaciones y el salón",
+    "zone": "z7",
+    "minutes": 20,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 15,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "20 min"
+  },
+  {
+    "id": "tareas1-16-1",
+    "title": "Cambiar sábanas de habitación 1",
+    "zone": "z2",
+    "minutes": 5,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 16,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "10–15 min"
+  },
+  {
+    "id": "tareas1-16-2",
+    "title": "Cambiar sábanas de habitación 2",
+    "zone": "z3",
+    "minutes": 5,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 16,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "10–15 min"
+  },
+  {
+    "id": "tareas1-16-3",
+    "title": "Cambiar sábanas de habitación 3",
+    "zone": "z4",
+    "minutes": 5,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 16,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "10–15 min"
+  },
+  {
+    "id": "tareas1-17",
+    "title": "Cambiar toallas y alfombrillas de baño; renovar paños de cocina antes si están sucios",
+    "zone": "z8",
+    "minutes": 5,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 17,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "5 min"
+  },
+  {
+    "id": "tareas1-18",
+    "title": "Limpiar microondas, fregadero y salpicaduras de cocina",
+    "zone": "z0",
+    "minutes": 15,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 18,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "15 min"
+  },
+  {
+    "id": "tareas1-19",
+    "title": "Revisar nevera, retirar alimentos estropeados y limpiar derrames",
+    "zone": "z0",
+    "minutes": 10,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 19,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "10 min"
+  },
+  {
+    "id": "tareas1-20",
+    "title": "Revisar y reponer arena, comida y bolsas para residuos de los gatos",
+    "zone": "z7",
+    "minutes": 5,
+    "pool": "weekly",
+    "pet": true,
+    "steps": [],
+    "sourceRow": 20,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "5 min"
+  },
+  {
+    "id": "tareas1-21",
+    "title": "Aspirar rascadores y camas de los gatos; limpiar sus zonas de descanso",
+    "zone": "z1",
+    "minutes": 12,
+    "pool": "weekly",
+    "pet": true,
+    "steps": [],
+    "sourceRow": 21,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "10–15 min"
+  },
+  {
+    "id": "tareas1-22",
+    "title": "Limpiar la fuente de agua, si utilizáis una, según sus instrucciones",
+    "zone": "z7",
+    "minutes": 10,
+    "pool": "weekly",
+    "pet": true,
+    "steps": [],
+    "sourceRow": 22,
+    "sourceFrequency": "Semanal",
+    "sourceTime": "10 min"
+  },
+  {
+    "id": "tareas1-23",
+    "title": "Vaciar y lavar completamente cada arenero, secarlo bien y poner arena limpia; adelantarlo si hay olor o suciedad",
+    "zone": "z7",
+    "minutes": 25,
+    "pool": "weekly",
+    "pet": true,
+    "steps": [
+      "Frecuencia orientativa: cada 2–4 semanas, según arena y uso; adelántala si hay olor o suciedad."
+    ],
+    "sourceRow": 23,
+    "sourceFrequency": "Cada 2–4 semanas, según arena y uso",
+    "sourceTime": "20–30 min"
+  },
+  {
+    "id": "tareas1-24",
+    "title": "Limpiar puertas, pomos, interruptores y marcas en paredes",
+    "zone": "z7",
+    "minutes": 15,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [
+      "Frecuencia orientativa: cada dos semanas."
+    ],
+    "sourceRow": 24,
+    "sourceFrequency": "Quincenal",
+    "sourceTime": "15 min"
+  },
+  {
+    "id": "tareas1-25-1",
+    "title": "Aspirar debajo de camas y muebles de habitación 1",
+    "zone": "z2",
+    "minutes": 8,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [
+      "Aspirar debajo de la cama y los muebles accesibles",
+      "Frecuencia orientativa: cada dos semanas."
+    ],
+    "sourceRow": 25,
+    "sourceFrequency": "Quincenal",
+    "sourceTime": "20 min"
+  },
+  {
+    "id": "tareas1-25-2",
+    "title": "Aspirar debajo de camas y muebles de habitación 2",
+    "zone": "z3",
+    "minutes": 8,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [
+      "Aspirar debajo de la cama y los muebles accesibles",
+      "Frecuencia orientativa: cada dos semanas."
+    ],
+    "sourceRow": 25,
+    "sourceFrequency": "Quincenal",
+    "sourceTime": "20 min"
+  },
+  {
+    "id": "tareas1-25-3",
+    "title": "Aspirar debajo de camas y muebles de habitación 3",
+    "zone": "z4",
+    "minutes": 8,
+    "pool": "weekly",
+    "pet": false,
+    "steps": [
+      "Aspirar debajo de la cama y los muebles accesibles",
+      "Frecuencia orientativa: cada dos semanas."
+    ],
+    "sourceRow": 25,
+    "sourceFrequency": "Quincenal",
+    "sourceTime": "20 min"
+  },
+  {
+    "id": "tareas1-26",
+    "title": "Lavar mantas y fundas de los gatos, o antes si están sucias",
+    "zone": "z8",
+    "minutes": 10,
+    "pool": "weekly",
+    "pet": true,
+    "steps": [
+      "Frecuencia orientativa: cada dos semanas."
+    ],
+    "sourceRow": 26,
+    "sourceFrequency": "Quincenal",
+    "sourceTime": "10 min activos"
+  },
+  {
+    "id": "tareas1-27",
+    "title": "Limpiar ventanas por dentro, espejos grandes y guías accesibles",
+    "zone": "z7",
+    "minutes": 38,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 27,
+    "sourceFrequency": "Mensual",
+    "sourceTime": "30–45 min"
+  },
+  {
+    "id": "tareas1-28",
+    "title": "Limpiar el interior de la nevera y sus cajones",
+    "zone": "z0",
+    "minutes": 25,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 28,
+    "sourceFrequency": "Mensual",
+    "sourceTime": "20–30 min"
+  },
+  {
+    "id": "tareas1-29",
+    "title": "Desengrasar la campana y limpiar sus filtros según el fabricante",
+    "zone": "z0",
+    "minutes": 18,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 29,
+    "sourceFrequency": "Mensual",
+    "sourceTime": "15–20 min"
+  },
+  {
+    "id": "tareas1-30",
+    "title": "Limpiar horno, según uso",
+    "zone": "z0",
+    "minutes": 25,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 30,
+    "sourceFrequency": "Mensual",
+    "sourceTime": "20–30 min"
+  },
+  {
+    "id": "tareas1-31",
+    "title": "Limpiar juntas, cajetín y filtro accesible de lavadora; revisar filtro del lavavajillas",
+    "zone": "z8",
+    "minutes": 20,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 31,
+    "sourceFrequency": "Mensual",
+    "sourceTime": "20 min"
+  },
+  {
+    "id": "tareas1-32",
+    "title": "Retirar pelos de desagües y revisar fugas bajo fregadero y lavabos",
+    "zone": "z7",
+    "minutes": 10,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [],
+    "sourceRow": 32,
+    "sourceFrequency": "Mensual",
+    "sourceTime": "10 min"
+  },
+  {
+    "id": "tareas1-33",
+    "title": "Revisar juguetes, rascadores y transportines de los gatos; limpiar y retirar piezas deterioradas",
+    "zone": "z1",
+    "minutes": 10,
+    "pool": "monthly",
+    "pet": true,
+    "steps": [],
+    "sourceRow": 33,
+    "sourceFrequency": "Mensual",
+    "sourceTime": "10 min"
+  },
+  {
+    "id": "tareas1-34",
+    "title": "Mover muebles manejables y limpiar detrás y debajo",
+    "zone": "z7",
+    "minutes": 38,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [
+      "Frecuencia orientativa: cada tres meses."
+    ],
+    "sourceRow": 34,
+    "sourceFrequency": "Trimestral",
+    "sourceTime": "30–45 min"
+  },
+  {
+    "id": "tareas1-35",
+    "title": "Limpiar rodapiés, rejillas de ventilación y lámparas accesibles",
+    "zone": "z7",
+    "minutes": 30,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [
+      "Frecuencia orientativa: cada tres meses."
+    ],
+    "sourceRow": 35,
+    "sourceFrequency": "Trimestral",
+    "sourceTime": "30 min"
+  },
+  {
+    "id": "tareas1-36",
+    "title": "Revisar despensa, armarios y productos de limpieza",
+    "zone": "z7",
+    "minutes": 25,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [
+      "Frecuencia orientativa: cada tres meses."
+    ],
+    "sourceRow": 36,
+    "sourceFrequency": "Trimestral",
+    "sourceTime": "20–30 min"
+  },
+  {
+    "id": "tareas1-37",
+    "title": "Lavar cortinas y limpiar persianas",
+    "zone": "z7",
+    "minutes": 50,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [
+      "Frecuencia orientativa: cada seis meses."
+    ],
+    "sourceRow": 37,
+    "sourceFrequency": "Semestral",
+    "sourceTime": "45–60 min activos"
+  },
+  {
+    "id": "tareas1-38-1",
+    "title": "Aspirar y girar colchón de habitación 1",
+    "zone": "z2",
+    "minutes": 10,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [
+      "Aspirar el colchón y girarlo si lo permite el fabricante.",
+      "Frecuencia orientativa: cada seis meses."
+    ],
+    "sourceRow": 38,
+    "sourceFrequency": "Semestral",
+    "sourceTime": "20 min"
+  },
+  {
+    "id": "tareas1-38-2",
+    "title": "Aspirar y girar colchón de habitación 2",
+    "zone": "z3",
+    "minutes": 10,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [
+      "Aspirar el colchón y girarlo si lo permite el fabricante.",
+      "Frecuencia orientativa: cada seis meses."
+    ],
+    "sourceRow": 38,
+    "sourceFrequency": "Semestral",
+    "sourceTime": "20 min"
+  },
+  {
+    "id": "tareas1-38-3",
+    "title": "Aspirar y girar colchón de habitación 3",
+    "zone": "z4",
+    "minutes": 10,
+    "pool": "monthly",
+    "pet": false,
+    "steps": [
+      "Aspirar el colchón y girarlo si lo permite el fabricante.",
+      "Frecuencia orientativa: cada seis meses."
+    ],
+    "sourceRow": 38,
+    "sourceFrequency": "Semestral",
+    "sourceTime": "20 min"
+  }
+]

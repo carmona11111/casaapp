@@ -4,6 +4,7 @@ import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { seed } from './seed.mjs';
 import { addDays, matches, mod, responsible, weekOffset } from './dates.mjs';
+const tareas1Catalogue=JSON.parse(readFileSync(new URL('./tareas1-catalog.json',import.meta.url),'utf8'));
 export function openStore(path) {
  let db;
  try {
@@ -33,7 +34,7 @@ export function openStore(path) {
  if(!db.prepare("SELECT sql FROM sqlite_master WHERE name='task_pools'").get().sql.includes("'monthly'")){
   db.exec("BEGIN; CREATE TABLE task_pools_next (template_id TEXT PRIMARY KEY REFERENCES templates(id), pool TEXT NOT NULL CHECK(pool IN ('daily','every3','weekly','occasional','monthly'))); INSERT INTO task_pools_next SELECT * FROM task_pools; DROP TABLE task_pools; ALTER TABLE task_pools_next RENAME TO task_pools; COMMIT;");
  }
- transaction(db,()=>{seed(db);ensureRequestedTasks(db);}); return db;
+ transaction(db,()=>{seed(db);ensureRequestedTasks(db);ensureTareas1Tasks(db);}); return db;
 }
 export const SHOPPING_TASK_ID='default-shopping-task';
 function ensureRequestedTasks(db){
@@ -53,6 +54,19 @@ function ensureRequestedTasks(db){
   add.run(id,'home',title,JSON.stringify(steps),zone,minutes,JSON.stringify({kind:'weekly',day:0,interval:52,offset:0}),'A',null,'2100-01-01',1,0);
   db.prepare('INSERT INTO task_pools VALUES (?,?)').run(id,pool);
   db.prepare('INSERT INTO task_points VALUES (?,?)').run(id,points);
+ }
+}
+function ensureTareas1Tasks(db){
+ const add=db.prepare('INSERT INTO templates VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
+ const addPool=db.prepare('INSERT OR IGNORE INTO task_pools VALUES (?,?)');
+ const findId=db.prepare('SELECT id FROM templates WHERE id=?');
+ const findTitle=db.prepare('SELECT id FROM templates WHERE lower(title)=lower(?) LIMIT 1');
+ for(const task of tareas1Catalogue){
+  if(!findId.get(task.id)){
+   if(findTitle.get(task.title))continue;
+   add.run(task.id,'home',task.title,JSON.stringify(task.steps),task.zone,task.minutes,JSON.stringify({kind:'weekly',day:0,interval:52,offset:0}),'A',null,'2100-01-01',1,Number(task.pet));
+  }
+  addPool.run(task.id,task.pool);
  }
 }
 export function transaction(db,fn){ db.exec('BEGIN IMMEDIATE'); try {const result=fn();db.exec('COMMIT');return result;}catch(e){db.exec('ROLLBACK');throw e;} }

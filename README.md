@@ -24,7 +24,7 @@ Abre `http://localhost:4310/entrada`. El acceso normal recuerda el perfil elegid
 
 ## Cómo funciona
 
-Las 34 tareas iniciales se distribuyen en cuatro pools. Las tareas de mascotas están desactivadas inicialmente y se pueden activar en **Organizar**.
+El tablero incluye las tareas iniciales y **48 opciones** basadas en las 38 actividades de `public/tareas1.txt`. Las tareas que abarcan varias camas o baños se ofrecen por habitación. Todas estas opciones nuevas empiezan libres, sin responsable; las tareas antiguas de mascotas mantienen su estado previo.
 
 | Pool | Disponibilidad tras completarla |
 | --- | --- |
@@ -32,6 +32,9 @@ Las 34 tareas iniciales se distribuyen en cuatro pools. Las tareas de mascotas e
 | Cada 2–3 días | Tras 3 días completos |
 | Cada semana | El lunes siguiente |
 | Cada 4 semanas | Tras 28 días |
+| Cada mes | El primer día del mes siguiente |
+
+Las tareas quincenales del archivo se muestran en **Cada semana** para poder elegirlas en la semana que corresponda. Las trimestrales y semestrales se muestran en **Cada mes**; su cadencia orientativa aparece al abrir los pasos de la tarea. No se asignan automáticamente.
 
 Cada tarea tiene uno de estos estados compartidos:
 

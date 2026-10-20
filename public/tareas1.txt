@@ -1,0 +1,39 @@
+Frecuencia	Tarea	Tiempo
+Diaria	Hacer la cama y ventilar las habitaciones	5 min
+Diaria	Recoger ropa, objetos y zonas comunes	10 min
+Diaria	Lavar los platos o cargar/vaciar el lavavajillas	10 min
+Diaria	Limpiar encimera, fogones y mesa después de cocinar	5–10 min
+Diaria	Retirar heces y grumos de los dos areneros, repasándolos mañana y noche	5–10 min
+Diaria	Barrer o aspirar la arena alrededor de los areneros	3 min
+Diaria	Lavar los cuencos de comida y renovar el agua de los gatos; lavar el cuenco de agua	5 min
+Diaria	Revisar basura y sacar orgánico o residuos de arenero cuando corresponda	3 min
+2–3 veces por semana	Aspirar suelos, especialmente zonas de paso y donde descansan los gatos	15–20 min
+2–3 veces por semana	Quitar pelos de sofá, sillas y textiles	5–10 min
+2–3 veces por semana	Repasar lavabos y WC de ambos baños	10 min
+Según necesidad	Poner lavadoras, tender, recoger y guardar la ropa	15–20 min activos
+Semanal	Limpiar a fondo los dos baños: WC, lavabo, ducha/bañera, grifos y espejos	30–40 min
+Semanal	Fregar los suelos	15–20 min
+Semanal	Quitar el polvo de muebles y superficies de las tres habitaciones y el salón	20 min
+Semanal	Cambiar las sábanas de las camas utilizadas	10–15 min
+Semanal	Cambiar toallas y alfombrillas de baño; renovar paños de cocina antes si están sucios	5 min
+Semanal	Limpiar microondas, fregadero y salpicaduras de cocina	15 min
+Semanal	Revisar nevera, retirar alimentos estropeados y limpiar derrames	10 min
+Semanal	Revisar y reponer arena, comida y bolsas para residuos de los gatos	5 min
+Semanal	Aspirar rascadores y camas de los gatos; limpiar sus zonas de descanso	10–15 min
+Semanal	Limpiar la fuente de agua, si utilizáis una, según sus instrucciones	10 min
+Cada 2–4 semanas, según arena y uso	Vaciar y lavar completamente cada arenero, secarlo bien y poner arena limpia; adelantarlo si hay olor o suciedad	20–30 min
+Quincenal	Limpiar puertas, pomos, interruptores y marcas en paredes	15 min
+Quincenal	Aspirar debajo de camas y muebles accesibles	20 min
+Quincenal	Lavar mantas y fundas de los gatos, o antes si están sucias	10 min activos
+Mensual	Limpiar ventanas por dentro, espejos grandes y guías accesibles	30–45 min
+Mensual	Limpiar el interior de la nevera y sus cajones	20–30 min
+Mensual	Desengrasar la campana y limpiar sus filtros según el fabricante	15–20 min
+Mensual	Limpiar horno, según uso	20–30 min
+Mensual	Limpiar juntas, cajetín y filtro accesible de lavadora; revisar filtro del lavavajillas	20 min
+Mensual	Retirar pelos de desagües y revisar fugas bajo fregadero y lavabos	10 min
+Mensual	Revisar juguetes, rascadores y transportines de los gatos; limpiar y retirar piezas deterioradas	10 min
+Trimestral	Mover muebles manejables y limpiar detrás y debajo	30–45 min
+Trimestral	Limpiar rodapiés, rejillas de ventilación y lámparas accesibles	30 min
+Trimestral	Revisar despensa, armarios y productos de limpieza	20–30 min
+Semestral	Lavar cortinas y limpiar persianas	45–60 min activos
+Semestral	Aspirar colchones y girarlos si lo permite el fabricante	20 min

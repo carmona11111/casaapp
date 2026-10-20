@@ -11,7 +11,7 @@ const db=openStore(join(directory,'home.sqlite'));
 test('Las tareas empiezan libres y sin asignación; solo quien las coge puede completarlas',()=>{
  const today='2026-10-19';
  const state=poolState(db,today);
- assert.equal(state.tasks.length,40);
+ assert.equal(state.tasks.length,88);
  assert.equal(state.tasks.filter(t=>t.active&&t.claimed_by).length,0);
  for(const pool of ['daily','every3','weekly','occasional','monthly'])assert.ok(state.tasks.some(t=>t.active&&t.pool===pool),pool);
  const task=state.tasks.find(t=>t.id==='t1');
@@ -32,6 +32,23 @@ test('Las tareas empiezan libres y sin asignación; solo quien las coge puede co
  assert.equal(poolState(db,'2026-10-26').week.points,0);
  assert.throws(()=>poolAction(db,{template_id:task.id,actor:'ivan',action:'claim'},today),/ya se hizo/);
  assert.equal(poolState(db,'2026-10-20').tasks.find(t=>t.id===task.id).available,true);
+});
+test('Las tareas de tareas1 se ofrecen libres por habitación y no se duplican al reiniciar',()=>{
+ const path=join(directory,'catalog.sqlite');
+ let catalogueDb=openStore(path);
+ const catalogue=poolState(catalogueDb,'2026-10-20').tasks.filter(task=>task.id.startsWith('tareas1-'));
+ assert.equal(catalogue.length,48);
+ assert.equal(new Set(catalogue.map(task=>task.zone_id)).size,10);
+ assert.ok(catalogue.every(task=>task.active===1&&task.claimed_by===null&&task.available));
+ assert.equal(catalogue.find(task=>task.id==='tareas1-01-1').zone,'Habitación 1');
+ assert.equal(catalogue.find(task=>task.id==='tareas1-11-2').zone,'Baño 2');
+ catalogueDb.prepare('UPDATE templates SET active=0 WHERE id=?').run('tareas1-01-1');
+ catalogueDb.close();
+ catalogueDb=openStore(path);
+ const after=poolState(catalogueDb,'2026-10-20').tasks.filter(task=>task.id.startsWith('tareas1-'));
+ assert.equal(after.length,48);
+ assert.equal(after.find(task=>task.id==='tareas1-01-1').active,0);
+ catalogueDb.close();
 });
 test('Las tareas nuevas tienen habitación, XP propios y la compra conserva responsable',()=>{
  const tasks=poolState(db,'2026-10-19').tasks;
