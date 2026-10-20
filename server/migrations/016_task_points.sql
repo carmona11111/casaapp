@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS task_points (template_id TEXT PRIMARY KEY REFERENCES templates(id), points INTEGER NOT NULL CHECK(points BETWEEN 1 AND 30));

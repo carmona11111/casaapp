@@ -11,9 +11,9 @@ const db=openStore(join(directory,'home.sqlite'));
 test('Las tareas empiezan libres y sin asignación; solo quien las coge puede completarlas',()=>{
  const today='2026-10-19';
  const state=poolState(db,today);
- assert.equal(state.tasks.length,34);
+ assert.equal(state.tasks.length,40);
  assert.equal(state.tasks.filter(t=>t.active&&t.claimed_by).length,0);
- for(const pool of ['daily','every3','weekly','occasional'])assert.ok(state.tasks.some(t=>t.active&&t.pool===pool),pool);
+ for(const pool of ['daily','every3','weekly','occasional','monthly'])assert.ok(state.tasks.some(t=>t.active&&t.pool===pool),pool);
  const task=state.tasks.find(t=>t.id==='t1');
  assert.equal(task.available,true);
  assert.throws(()=>poolAction(db,{template_id:task.id,actor:'ivan',action:'complete'},today),/Coge primero/);
@@ -32,6 +32,18 @@ test('Las tareas empiezan libres y sin asignación; solo quien las coge puede co
  assert.equal(poolState(db,'2026-10-26').week.points,0);
  assert.throws(()=>poolAction(db,{template_id:task.id,actor:'ivan',action:'claim'},today),/ya se hizo/);
  assert.equal(poolState(db,'2026-10-20').tasks.find(t=>t.id===task.id).available,true);
+});
+test('Las tareas nuevas tienen habitación, XP propios y la compra conserva responsable',()=>{
+ const tasks=poolState(db,'2026-10-19').tasks;
+ const litter=tasks.find(t=>t.id==='default-litter-clean');
+ assert.equal(litter.zone,'Salón y comedor');
+ assert.equal(litter.pool,'every3');
+ assert.equal(litter.points,10);
+ assert.equal(available({pool:'monthly'},{local_date:'2026-10-31'},'2026-11-01'),true);
+ assert.equal(available({pool:'monthly'},{local_date:'2026-10-01'},'2026-10-31'),false);
+ poolAction(db,{template_id:'default-shopping-task',actor:'ivan',action:'claim'},'2026-10-19');
+ assert.equal(poolState(db,'2026-10-20').tasks.find(t=>t.id==='default-shopping-task').claimed_by,'ivan');
+ poolAction(db,{template_id:'default-shopping-task',actor:'ivan',action:'release'},'2026-10-20');
 });
 test('Los ciclos de 3 días y las semanas se desbloquean según la fecha',()=>{
  const every3={pool:'every3'},weekly={pool:'weekly'},occasional={pool:'occasional'};

@@ -34,7 +34,8 @@ test('Las rutas de login desaparecen y las cookies antiguas no bloquean el acces
  assert.equal((await request('/api/logout',{method:'POST',data:{}})).status,404);
  assert.equal((await request('/api/state',{cookie:'casa_session=expired'})).status,200);
 });
-test('Entrada, manifiesto y arte del castillo disponibles en el mismo servidor',async()=>{const entry=await request('/entrada');assert.equal(entry.status,200);assert.match(entry.data,/Hogar Encantado/);const manifest=await request('/manifest.webmanifest');assert.equal(manifest.data.name,'Hogar Encantado');assert.equal(manifest.data.start_url,'/');assert.equal(manifest.data.icons.length,2);for(const path of ['/mickey.png','/tio-gilito.png','/castillo/04_iluminacion.png','/0eefb429-5aa8-4479-940a-0c638fd9f3da.png']){const asset=await request(path);assert.equal(asset.status,200,path);assert.equal(asset.headers['content-type'],'image/png');}});
+test('Entrada, manifiesto e imágenes de los recordatorios disponibles',async()=>{const entry=await request('/entrada');assert.equal(entry.status,200);assert.match(entry.data,/Hogar Encantado/);const manifest=await request('/manifest.webmanifest');assert.equal(manifest.data.name,'Hogar Encantado');assert.equal(manifest.data.start_url,'/');assert.equal(manifest.data.icons.length,2);for(const path of ['/mickey.png','/tio-gilito.png','/castillo/04_iluminacion.png','/0eefb429-5aa8-4479-940a-0c638fd9f3da.png']){const asset=await request(path);assert.equal(asset.status,200,path);assert.equal(asset.headers['content-type'],'image/png');}for(const path of ['/tareas.jpg','/images%20(2).jpg','/images%20(3).jpg']){const asset=await request(path);assert.equal(asset.status,200,path);assert.equal(asset.headers['content-type'],'image/jpeg');}});
+test('El informe de Mickey ofrece datos semanales y recuerda planificar la semana siguiente',async()=>{const report=await request('/api/report');assert.equal(report.status,200);assert.match(report.data.sunday,/^\d{4}-\d{2}-\d{2}$/);assert.equal(report.data.nextWeek,addDays(report.data.sunday,1));assert.ok(report.data.week.tasks>=0);assert.ok(report.data.month.expense_cents>=0);assert.equal(typeof report.data.next.effortPlanned,'boolean');});
 
 test('El acceso directo acepta el origen LAN y devuelve su enlace de entrada',async()=>{
  const origin='http://192.168.190.50:4310';
@@ -64,14 +65,16 @@ test('Pool compartida: coger, completar, sumar puntos y exportar el progreso',as
 test('Organizar permite crear tareas sin responsable y editar su pool',async()=>{
  const before=(await request('/api/pool')).data;
  const zone=before.zones[0];
- const created=await request('/api/pool/task',{method:'POST',data:{actor:'ivan',title:'Ordenar recibidor',steps:['Guardar zapatos'],zone_id:zone.id,minutes:10,pool:'every3',active:1}});
+ const created=await request('/api/pool/task',{method:'POST',data:{actor:'ivan',title:'Ordenar recibidor',steps:['Guardar zapatos'],zone_id:zone.id,minutes:10,points:17,pool:'every3',active:1}});
  assert.equal(created.status,200);
  const after=(await request('/api/pool')).data;
  const task=after.tasks.find(t=>t.title==='Ordenar recibidor');
  assert.equal(task.claimed_by,null);
  assert.equal(task.pool,'every3');
- const updated=await request('/api/pool/task',{method:'POST',data:{actor:'person2',id:task.id,title:'Ordenar entrada',steps:['Guardar zapatos'],zone_id:zone.id,minutes:15,pool:'weekly',active:1}});
+ assert.equal(task.points,17);
+ const updated=await request('/api/pool/task',{method:'POST',data:{actor:'person2',id:task.id,title:'Ordenar entrada',steps:['Guardar zapatos'],zone_id:zone.id,minutes:15,points:23,pool:'weekly',active:1}});
  assert.equal(updated.status,200);
+ assert.equal((await request('/api/pool')).data.tasks.find(t=>t.id===task.id).points,23);
  assert.equal((await request('/api/pool')).data.tasks.find(t=>t.id===task.id).pool,'weekly');
 });
 test('Comidas: recetario vacío, plan semanal y compra agregada con casillas persistentes',async()=>{
@@ -310,4 +313,50 @@ test('Ingresos, gastos repartidos y pagos conservan el saldo entre perfiles y en
  assert.equal(state.entries.length,3);
  const legacy=structuredClone(copy);delete legacy.financeData;
  assert.equal((await request('/api/import/preview',{method:'POST',data:legacy})).status,200);
+});
+
+test('El plan de la semana siguiente se puede consultar y guardar desde el recordatorio',async()=>{const today=localDate(),start=addDays(today,-((new Date(today+'T12:00:00Z').getUTCDay()+6)%7)),next=addDays(start,7);const before=await request('/api/coop/plan?week='+next);assert.equal(before.status,200);const saved=await request('/api/coop/plan',{method:'POST',data:{actor:'ivan',week_start:next,target_xp:180,essentials:[],kitchen_mode:'plan',team_mode:'saving'}});assert.equal(saved.status,200,JSON.stringify(saved.data));const after=await request('/api/coop/plan?week='+next);assert.equal(after.data.target_xp,180);assert.equal(after.data.planned,true);});
+
+test('Un pedido de hoy se registra una vez, activa el aviso y se conserva en la copia',async()=>{
+ const today=localDate(),meals=(await request('/api/meals')).data;
+ const noDelivery=meals.noDelivery.find(row=>row.date===today);
+ if(noDelivery)assert.equal((await request('/api/meals/no-delivery',{method:'POST',data:{actor:noDelivery.person_id,date:today,done:false,saved_cents:0}})).status,200);
+ const saved=await request('/api/meals/order',{method:'POST',data:{actor:'ivan',date:today,done:true}});
+ assert.equal(saved.status,200,JSON.stringify(saved.data));
+ assert.equal((await request('/api/meals/order',{method:'POST',data:{actor:'ivan',date:today,done:true}})).status,409);
+ assert.equal((await request('/api/meals/no-delivery',{method:'POST',data:{actor:'ivan',date:today,done:true,saved_cents:0}})).status,409);
+ assert.equal((await request('/api/meals')).data.deliveryOrders.find(row=>row.date===today).person_id,'ivan');
+ const exported=(await request('/api/export')).data;
+ assert.ok(exported.mealsData.deliveryOrders.some(row=>row.date===today));
+ const preview=await request('/api/import/preview',{method:'POST',data:exported});
+ assert.equal(preview.status,200,JSON.stringify(preview.data));
+ const restored=await request('/api/import',{method:'POST',data:{data:exported,digest:preview.data.digest,revision:preview.data.revision,actor:'ivan',confirm:true}});
+ assert.equal(restored.status,200,JSON.stringify(restored.data));
+ assert.equal((await request('/api/meals')).data.deliveryOrders.find(row=>row.date===today).person_id,'ivan');
+});
+
+test('Una receta planificada sin cocinar aparece en el aviso tras tres días',async()=>{
+ const today=localDate(),older=addDays(today,-3),recent=addDays(today,-2);
+ const recipe=(await request('/api/meals')).data.recipes[0];
+ assert.ok(recipe);
+ assert.equal((await request('/api/meals/plan',{method:'POST',data:{actor:'ivan',date:older,slot:'dinner',recipe_id:recipe.id}})).status,200);
+ assert.equal((await request('/api/meals/plan',{method:'POST',data:{actor:'ivan',date:recent,slot:'dinner',recipe_id:recipe.id}})).status,200);
+ const state=(await request('/api/pool')).data;
+ assert.ok(state.latePlannedMeals.some(row=>row.date===older&&row.slot==='dinner'));
+ assert.ok(!state.latePlannedMeals.some(row=>row.date===recent&&row.slot==='dinner'));
+ assert.equal((await request('/api/meals/complete',{method:'POST',data:{actor:'ivan',date:older,slot:'dinner',completed:true}})).status,200);
+ assert.ok(!(await request('/api/pool')).data.latePlannedMeals.some(row=>row.date===older&&row.slot==='dinner'));
+});
+test('Las fotos de ambos perfiles se guardan y descubren un logro secreto del mismo universo',async()=>{
+ const before=(await request('/api/pool')).data;
+ assert.equal(before.profileAvatars.filter(avatar=>!avatar.legacy).length,20);
+ assert.equal((await request('/avatars/05_anna.jpg')).status,200);
+ assert.equal((await request('/api/profile/avatar',{method:'POST',data:{actor:'ivan',avatar_key:'inventado'}})).status,400);
+ assert.equal((await request('/api/profile/avatar',{method:'POST',data:{actor:'ivan',avatar_key:'05_anna'}})).status,200);
+ assert.equal((await request('/api/profile/avatar',{method:'POST',data:{actor:'person2',avatar_key:'06_elsa'}})).status,200);
+ const after=(await request('/api/pool')).data;
+ assert.equal(after.people.find(person=>person.id==='ivan').avatar_key,'05_anna');
+ assert.equal(after.people.find(person=>person.id==='person2').avatar_key,'06_elsa');
+ assert.equal(after.coop.badges.find(badge=>badge.id==='secret_same_film').earned,true);
+ assert.equal((await request('/api/export')).data.profileSelections.length,2);
 });

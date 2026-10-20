@@ -1,4 +1,5 @@
-import {CharacterBanner} from './fairytale';
+import {CharacterBanner,scrollScene} from './fairytale';
+import {GuideFeedback} from './guide-feedback';
 import React,{useEffect,useRef,useState} from 'react';
 import {BookOpen,CalendarDays,Check,ChevronLeft,ChevronRight,ImagePlus,Pencil,Plus,Search,ShoppingBasket,Trash2,UtensilsCrossed,X} from 'lucide-react';
 import {api,dateText,monday,plusDays,todayLocal} from './types';
@@ -10,8 +11,9 @@ type PlanRow={date:string;slot:'lunch'|'dinner';recipe_id:string};
 type ShoppingItem={key:string;name:string;quantity:number;unit:Unit;checked:boolean};
 type MealDone={date:string;slot:'lunch'|'dinner';recipe_id:string;person_id:string;points:number};
 type NoDelivery={date:string;person_id:string;saved_cents:number;points:number};
+type DeliveryOrder={date:string;person_id:string;created_at:string};
 type Rating={recipe_id:string;person_id:string;rating:number};
-type MealsState={today:string;weekStart:string;recipes:Recipe[];plan:PlanRow[];shopping:ShoppingItem[];completed:MealDone[];noDelivery:NoDelivery[];ratings:Rating[];cookedRecipeIds:string[]};
+type MealsState={today:string;weekStart:string;recipes:Recipe[];plan:PlanRow[];shopping:ShoppingItem[];completed:MealDone[];noDelivery:NoDelivery[];deliveryOrders?:DeliveryOrder[];ratings:Rating[];cookedRecipeIds:string[]};
 type Draft={name:string;photo:string|null;ingredients:Ingredient[]};
 type Write=(path:string,payload:object,success:string)=>Promise<boolean>;
 const units:{value:Unit;label:string}[]=[{value:'ud',label:'ud'},{value:'g',label:'g'},{value:'kg',label:'kg'},{value:'ml',label:'ml'},{value:'l',label:'l'},{value:'cda',label:'cda'},{value:'cdta',label:'cdta'},{value:'paquete',label:'paquete'}];
@@ -44,8 +46,8 @@ async function photoData(file:File):Promise<string>{
  }finally{URL.revokeObjectURL(url);}
 }
 
-export function Meals({actor,disabled,write,initialSection='plan'}:{actor:string;disabled:boolean;write:Write;initialSection?:'plan'|'shopping'}){
- const [week,setWeek]=useState(()=>monday(todayLocal()));
+export function Meals({actor,disabled,write,initialSection='plan',initialWeek,initialRecipeId,shoppingOwner,onOrderRecorded}:{actor:string;disabled:boolean;write:Write;initialSection?:'plan'|'shopping'|'recipes';initialWeek?:string|null;initialRecipeId?:string|null;shoppingOwner?:string|null;onOrderRecorded:()=>void}){
+ const [week,setWeek]=useState(()=>initialWeek||monday(todayLocal()));
  const [data,setData]=useState<MealsState|null>(null);
  const [section,setSection]=useState<'plan'|'recipes'|'shopping'>(initialSection);
  useEffect(()=>setSection(initialSection),[initialSection]);
@@ -55,6 +57,7 @@ export function Meals({actor,disabled,write,initialSection='plan'}:{actor:string
  const [shoppingView,setShoppingView]=useState<'pending'|'all'>('pending');
  const [shoppingQuery,setShoppingQuery]=useState('');
  const editorRef=useRef<HTMLFormElement>(null);
+ const openedInitialRecipe=useRef<string|null>(null);
  const currentWeekRef=useRef(week);currentWeekRef.current=week;
  async function load(currentWeek=week){
   try{const next:MealsState=await api(`/api/meals?week=${currentWeek}`);if(currentWeek!==currentWeekRef.current)return;setData(next);setError('');try{localStorage.setItem(`casa-meals-${currentWeek}`,JSON.stringify(next));}catch{}}
@@ -63,6 +66,7 @@ export function Meals({actor,disabled,write,initialSection='plan'}:{actor:string
  useEffect(()=>{setData(null);void load(week);const refresh=()=>{if(document.visibilityState==='visible')void load(week);};const timer=setInterval(refresh,15000);window.addEventListener('focus',refresh);window.addEventListener('online',refresh);document.addEventListener('visibilitychange',refresh);return()=>{clearInterval(timer);window.removeEventListener('focus',refresh);window.removeEventListener('online',refresh);};},[week]);
  async function save(path:string,payload:object,success:string){if(saving||disabled)return false;setSaving(true);setError('');try{const ok=await write(path,{...payload,actor},success);if(ok)await load();return ok;}finally{setSaving(false);}}
  function openEditor(recipe?:Recipe){setSection('recipes');setDeleteId(null);setEditorId(recipe?.id||'new');setDraft(recipe?{name:recipe.name,photo:recipe.photo,ingredients:recipe.ingredients.map(i=>({...i}))}:newDraft());requestAnimationFrame(()=>editorRef.current?.scrollIntoView({behavior:'smooth',block:'start'}));}
+ useEffect(()=>{if(!initialRecipeId||openedInitialRecipe.current===initialRecipeId||!data?.recipes)return;const recipe=data.recipes.find(item=>item.id===initialRecipeId);if(recipe){openedInitialRecipe.current=initialRecipeId;openEditor(recipe);}},[initialRecipeId,data?.recipes]);
  function updateIngredient(index:number,field:keyof Ingredient,value:string|number){setDraft(current=>current&&({...current,ingredients:current.ingredients.map((item,i)=>i===index?{...item,[field]:value}:item)}));}
  async function submitRecipe(e:React.FormEvent){e.preventDefault();if(!draft)return;const ok=await save('/api/meals/recipe',{id:editorId==='new'?undefined:editorId,name:draft.name.trim(),photo:draft.photo,ingredients:draft.ingredients.map(i=>({...i,name:i.name.trim(),quantity:Number(i.quantity)}))},'Receta guardada');if(ok){setEditorId(null);setDraft(null);}}
  async function removeRecipe(id:string){const ok=await save('/api/meals/recipe/delete',{id},'Receta borrada');if(ok)setDeleteId(null);}
@@ -70,12 +74,14 @@ export function Meals({actor,disabled,write,initialSection='plan'}:{actor:string
  async function checkItem(item:ShoppingItem){await save('/api/meals/check',{week_start:week,key:item.key,checked:!item.checked},'Lista de compra actualizada');}
  async function markCooked(date:string,slot:'lunch'|'dinner',completed:boolean){await save('/api/meals/complete',{date,slot,completed},completed?'+20 XP · comida cocinada según el plan':'Comida desmarcada');}
  async function markNoDelivery(done:boolean){const cents=Math.round(Number(avoided||0)*100);if(!Number.isFinite(cents)||cents<0||cents>100000){setError('Indica entre 0 y 1000 € de gasto evitado.');return;}const ok=await save('/api/meals/no-delivery',{date:todayLocal(),done,saved_cents:done?cents:0},done?'+5 XP · día sin pedido':'Día desmarcado');if(ok)setAvoided('');}
+ async function markOrder(done:boolean){const ok=await save('/api/meals/order',{date:todayLocal(),done},done?'Pedido de hoy registrado':'Pedido desmarcado');if(ok&&done)onOrderRecorded();}
  async function rate(recipe_id:string,rating:number){await save('/api/meals/rate',{recipe_id,rating},'Valoración guardada');}
  const visibleData=data?.weekStart===week?data:null;
  const weekEnd=plusDays(week,6),recipes=visibleData?.recipes||[],plan=visibleData?.plan||[],shopping=visibleData?.shopping||[];
  const planned=plan.length,checked=shopping.filter(i=>i.checked).length,completed=visibleData?.completed||[],noDelivery=visibleData?.noDelivery||[];
  const completedBySlot=new Map(completed.map(row=>[`${row.date}|${row.slot}`,row]));
  const noDeliveryToday=noDelivery.find(row=>row.date===todayLocal());
+ const deliveryOrderToday=visibleData?.deliveryOrders?.find(row=>row.date===todayLocal());
  const recipeById=new Map(recipes.map(recipe=>[recipe.id,recipe]));
  const myRatings=new Map((visibleData?.ratings||[]).filter(r=>r.person_id===actor).map(r=>[r.recipe_id,r.rating]));
  const cookedRecipeIds=new Set(visibleData?.cookedRecipeIds||[]);
@@ -83,11 +89,14 @@ export function Meals({actor,disabled,write,initialSection='plan'}:{actor:string
  const matching=shopping.filter(item=>item.name.toLocaleLowerCase('es-ES').includes(shoppingQuery.trim().toLocaleLowerCase('es-ES')));
  const shownShopping=matching.filter(item=>shoppingView==='all'||!item.checked).sort((a,b)=>Number(a.checked)-Number(b.checked)||a.name.localeCompare(b.name,'es-ES'));
  const cannotWrite=disabled||saving||photoBusy;
- return <div className="meals-page"><CharacterBanner guide="ratatouille" eyebrow="RATATOUILLE EN LA COCINA" title="Una semana para saborear" description="Cread recetas, elegid el menú y preparad la compra como un equipo."/><div className="page-heading meals-heading"><div><span className="eyebrow">UNA SEMANA MÁS FÁCIL</span><h1>El libro de recetas</h1><p>Recetas, calendario y lista de compra en un solo lugar.</p></div><button className="primary" disabled={cannotWrite||!visibleData} onClick={()=>openEditor()}><Plus size={17}/> Nueva receta</button></div>
+ function openRoom(next:'plan'|'recipes'|'shopping'){setSection(next);requestAnimationFrame(()=>scrollScene('#meals-room-content'));}
+ return <div className={`meals-page view-${section}`}><CharacterBanner guide="ratatouille" eyebrow="RATATOUILLE EN LA COCINA" title="Una semana para saborear" description="Cread recetas, elegid el menú y preparad la compra como un equipo."><button onClick={()=>openRoom('plan')}><CalendarDays size={21}/>Plan</button><button onClick={()=>openRoom('recipes')}><BookOpen size={21}/>Recetas</button><button onClick={()=>openRoom('shopping')}><ShoppingBasket size={21}/>Compra</button></CharacterBanner><GuideFeedback guide="ratatouille" title={plan.length?`${plan.length} comidas en el plan`:'La cocina espera vuestras ideas'} message={plan.length?`Esta semana habéis cocinado ${visibleData?.completed.length||0} comidas y quedan ${shopping.filter(item=>!item.checked).length} productos por comprar.`:'Elegid alguna receta para la semana. Al hacerlo, la lista de la compra se preparará sola.'}/><div className="page-heading meals-heading"><div><span className="eyebrow">UNA SEMANA MÁS FÁCIL</span><h1>El libro de recetas</h1><p>Recetas, calendario y lista de compra en un solo lugar.</p></div><button className="primary" disabled={cannotWrite||!visibleData} onClick={()=>openEditor()}><Plus size={17}/> Nueva receta</button></div>
   {error&&<div className="notice error" role="alert"><span>{error}</span><button onClick={()=>setError('')}>Cerrar</button></div>}
   <div className="meals-overview"><div className="meals-overview-icon"><UtensilsCrossed size={27}/></div><div><span className="eyebrow">PLAN COMPARTIDO</span><h2>De la idea a la mesa</h2><p>Planificad, cocinad y marcad cada comida cumplida. Cada comida del calendario que cocinéis suma 10 XP por cocinar y 10 por cumplir el plan.</p></div><div className="meals-overview-stats"><strong>{completed.length}<small>/{planned}</small></strong><span>comidas del plan<br/>cocinadas</span></div></div>
-  {visibleData&&week===monday(todayLocal())&&<section className="no-delivery-card"><div><span className="eyebrow">PEQUEÑO HÁBITO, GRAN VIAJE</span><h2>Hoy, sin pedido a domicilio</h2><p>Marcádlo una vez por día entre los dos. Suma 5 XP. El gasto evitado es orientativo y se muestra separado del dinero realmente ahorrado.</p></div>{noDeliveryToday?<div className="no-delivery-action"><strong><Check size={18}/> Registrado · +5 XP</strong>{noDeliveryToday.person_id===actor&&<button className="text-button" disabled={cannotWrite} onClick={()=>void markNoDelivery(false)}>Deshacer</button>}</div>:<div className="no-delivery-action"><label>Gasto evitado estimado (€)<input type="number" min="0" max="1000" step="0.01" placeholder="Opcional" value={avoided} onChange={e=>setAvoided(e.target.value)}/></label><button className="primary" disabled={cannotWrite} onClick={()=>void markNoDelivery(true)}><Check size={16}/> Hoy no pedimos</button></div>}</section>}
-  <div className="meals-nav" aria-label="Secciones de comidas"><button className={section==='plan'?'selected':''} aria-pressed={section==='plan'} onClick={()=>setSection('plan')}><CalendarDays size={18}/> Plan semanal</button><button className={section==='recipes'?'selected':''} aria-pressed={section==='recipes'} onClick={()=>setSection('recipes')}><BookOpen size={18}/> Mis recetas <span>{recipes.length}</span></button><button className={section==='shopping'?'selected':''} aria-pressed={section==='shopping'} onClick={()=>setSection('shopping')}><ShoppingBasket size={18}/> Compra <span>{shopping.length}</span></button></div>
+  {visibleData&&week===monday(todayLocal())&&<section className="no-delivery-card"><div><span className="eyebrow">PEQUEÑO HÁBITO, GRAN VIAJE</span><h2>Pedidos de hoy</h2><p>Indicad si hoy hubo pedido a domicilio. Un día sin pedido suma 5 XP; un pedido registrado no suma ni resta puntos. Si queréis incluir su coste en las cuentas, añadidlo en Economía.</p></div>
+   {noDeliveryToday?<div className="no-delivery-action"><strong><Check size={18}/> Sin pedido · +5 XP</strong>{noDeliveryToday.person_id===actor&&<button className="text-button" disabled={cannotWrite} onClick={()=>void markNoDelivery(false)}>Deshacer</button>}</div>:deliveryOrderToday?<div className="no-delivery-action"><strong>Pedido registrado hoy</strong>{deliveryOrderToday.person_id===actor&&<button className="text-button" disabled={cannotWrite} onClick={()=>void markOrder(false)}>Deshacer</button>}</div>:<div className="no-delivery-action"><label>Gasto evitado estimado (€)<input type="number" min="0" max="1000" step="0.01" placeholder="Opcional" value={avoided} onChange={e=>setAvoided(e.target.value)}/></label><button className="primary" disabled={cannotWrite} onClick={()=>void markNoDelivery(true)}><Check size={16}/> Hoy no pedimos</button><button className="secondary" disabled={cannotWrite} onClick={()=>void markOrder(true)}>Hoy pedimos</button></div>}
+  </section>}
+  <div id="meals-room-content" className="meals-nav" aria-label="Secciones de comidas"><button className={section==='plan'?'selected':''} aria-pressed={section==='plan'} onClick={()=>setSection('plan')}><CalendarDays size={18}/> Plan semanal</button><button className={section==='recipes'?'selected':''} aria-pressed={section==='recipes'} onClick={()=>setSection('recipes')}><BookOpen size={18}/> Mis recetas <span>{recipes.length}</span></button><button className={section==='shopping'?'selected':''} aria-pressed={section==='shopping'} onClick={()=>setSection('shopping')}><ShoppingBasket size={18}/> Compra <span>{shopping.length}</span></button></div>
   {!visibleData&&<div className="meals-empty"><BookOpen size={29}/><h3>{error?'No se pudo cargar esta semana':'Preparando las comidas…'}</h3><p>{error?'Comprueba la conexión y vuelve a intentarlo.':'Estamos buscando vuestro plan y vuestra lista de compra.'}</p>{error&&<button className="secondary" onClick={()=>void load()}>Reintentar</button>}</div>}
   {visibleData&&section==='plan'&&<>
 <div className="meals-section-heading">
@@ -232,6 +241,7 @@ export function Meals({actor,disabled,write,initialSection='plan'}:{actor:string
 <div className="shopping-progress">
 <div>
 <span className="eyebrow">LISTA COMPARTIDA</span>
+<p className="shopping-assignee">{shoppingOwner?`Compra pendiente asignada a ${shoppingOwner}`:'Compra pendiente sin asignar · coge «Hacer compra» en Tareas'}</p>
 <h3>{checked===shopping.length?'¡Compra lista!':`${shopping.length-checked} ${shopping.length-checked===1?'producto pendiente':'productos pendientes'}`}</h3>
 <p>{checked} de {shopping.length} marcados · Las cantidades iguales se suman automáticamente.</p>
 </div>

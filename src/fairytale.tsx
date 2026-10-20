@@ -1,6 +1,8 @@
-import type {CSSProperties} from 'react';
-
 export type Guide='mickey'|'cenicienta'|'ratatouille'|'gilito';
+export function scrollScene(selector:string){
+ const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches||localStorage.getItem('casa-motion')==='reduced'||localStorage.getItem('casa-motion')==='none';
+ document.querySelector<HTMLElement>(selector)?.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});
+}
 const guides:Record<Guide,{src:string;name:string;role:string}>={
  mickey:{src:'/mickey.png',name:'Mickey',role:'El anfitrión del hogar'},
  cenicienta:{src:'/cenicienta.png',name:'Cenicienta',role:'La guía de limpieza y orden'},
@@ -11,28 +13,27 @@ const guides:Record<Guide,{src:string;name:string;role:string}>={
 export function CharacterBanner({guide,eyebrow,title,description,children}:{guide:Guide;eyebrow:string;title:string;description:string;children?:React.ReactNode}){
  const character=guides[guide];
  return <section className={`character-banner guide-${guide}`} aria-label={`${title}. ${character.name}: ${character.role}`}>
-  <div className="character-banner-copy"><span className="eyebrow">✦ {eyebrow}</span><h1>{title}</h1><p>{description}</p>{children}</div>
+  <div className="character-banner-copy"><span className="eyebrow">✦ {eyebrow}</span><h1>{title}</h1><p>{description}</p></div>
+  {children&&<div className="character-banner-actions">{children}</div>}
   <div className="character-portrait"><span className="character-halo"/><img src={character.src} alt={character.name}/></div>
   <span className="character-spark character-spark-one" aria-hidden="true">✦</span><span className="character-spark character-spark-two" aria-hidden="true">✧</span>
  </section>;
 }
 
-// The uploaded sheet contains four columns and three rows. Several achievements
-// share an illustration, while their names and unlock rules stay distinct.
-const art:Record<string,number>={
- joint_first:0,home_control:0,bathrooms:1,boss:2,maintenance:3,
- delivery_pause:4,week_resolved:4,tuppers:5,recipe_collection:6,fridge:7,
- first_saving:8,goal_25:8,goal_50:9,goal_75:9,goal_100:9,
- smart_shopping:9,team_mode:10,team_review:10,fair_load:10,
- goal_protected:9,return:11,
- first_clean:0,first_meal:4,first_delivery:7,streak:11,balanced:10,travel:9
+const memeArt:Record<string,string>={
+ joint_first:'01_primera_victoria.png',first_clean:'01_primera_victoria.png',return:'01_primera_victoria.png',
+ week_resolved:'02_semana_resuelta.png',delivery_pause:'02_semana_resuelta.png',tuppers:'02_semana_resuelta.png',recipe_collection:'02_semana_resuelta.png',fridge:'02_semana_resuelta.png',first_meal:'02_semana_resuelta.png',first_delivery:'02_semana_resuelta.png',smart_shopping:'02_semana_resuelta.png',
+ first_saving:'03_primer_ladrillo.png',goal_25:'03_primer_ladrillo.png',goal_50:'03_primer_ladrillo.png',goal_75:'03_primer_ladrillo.png',goal_protected:'03_primer_ladrillo.png',
+ team_mode:'04_modo_cooperativo.png',team_review:'04_modo_cooperativo.png',fair_load:'04_modo_cooperativo.png',balanced:'04_modo_cooperativo.png',
+ home_control:'05_casa_bajo_control.png',bathrooms:'05_casa_bajo_control.png',boss:'05_casa_bajo_control.png',maintenance:'05_casa_bajo_control.png',streak:'05_casa_bajo_control.png',
+ goal_100:'06_viaje_preparado.png',travel:'06_viaje_preparado.png'
 };
 
 export function StickerArt({id,className=''}:{id:string;className?:string}){
- const index=art[id];
- if(index===undefined)return <span className={`sticker-art sticker-fallback ${className}`} aria-hidden="true">✦</span>;
- const style:CSSProperties={backgroundPosition:`${(index%4)*100/3}% ${Math.floor(index/4)*50}%`};
- return <span className={`sticker-art ${className}`} style={style} aria-hidden="true"/>;
+ if(id.startsWith('secret_'))return <span className={`sticker-art secret-sticker ${className}`} aria-hidden="true">?</span>;
+ const file=memeArt[id];
+ if(!file)return <span className={`sticker-art sticker-fallback ${className}`} aria-hidden="true">✦</span>;
+ return <img className={`sticker-art meme-sticker ${className}`} src={`/stickers/memes/${file}`} alt="" aria-hidden="true" loading="lazy" decoding="async"/>;
 }
 
 export function CastleArt({totalXP}:{totalXP:number}){

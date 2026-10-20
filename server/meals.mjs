@@ -41,9 +41,10 @@ export function mealsState(db,week=monday(localDate())){
  const shopping=aggregateShopping(recipes,plan).map(item=>({...item,checked:(checks.get(item.key)||0)>=item.quantity}));
  const completed=db.prepare('SELECT date,slot,recipe_id,person_id,completed_at,points FROM meal_completions WHERE date BETWEEN ? AND ? ORDER BY date,slot').all(week,end);
  const noDelivery=db.prepare('SELECT date,person_id,saved_cents,completed_at,points FROM no_delivery_days WHERE date BETWEEN ? AND ? ORDER BY date').all(week,end);
+ const deliveryOrders=db.prepare('SELECT date,person_id,created_at FROM delivery_orders WHERE date BETWEEN ? AND ? ORDER BY date').all(week,end);
  const ratings=db.prepare('SELECT recipe_id,person_id,rating,rated_at FROM recipe_ratings').all();
  const cookedRecipeIds=db.prepare('SELECT DISTINCT recipe_id FROM meal_completions').all().map(row=>row.recipe_id);
- return {today:localDate(),weekStart:week,recipes,plan,shopping,completed,noDelivery,ratings,cookedRecipeIds};
+ return {today:localDate(),weekStart:week,recipes,plan,shopping,completed,noDelivery,deliveryOrders,ratings,cookedRecipeIds};
 }
 
 export function rateRecipe(db,{actor,recipe_id,rating}){
@@ -106,11 +107,27 @@ export function setNoDelivery(db,{date,actor,done,saved_cents}){
  const existing=db.prepare('SELECT person_id FROM no_delivery_days WHERE date=?').get(date);
  if(done){
   if(existing)fail(409,'Este día ya se registró sin pedido.');
+  if(db.prepare('SELECT 1 FROM delivery_orders WHERE date=?').get(date))fail(409,'Este día ya figura con un pedido a domicilio.');
   db.prepare('INSERT INTO no_delivery_days VALUES (?,?,?,?,?)').run(date,actor,saved_cents,new Date().toISOString(),5);
  }else{
   if(!existing)fail(409,'Este día ya no está registrado.');
   if(existing.person_id!==actor)fail(409,'Solo quien registró el día puede deshacerlo.');
   db.prepare('DELETE FROM no_delivery_days WHERE date=?').run(date);
+ }
+ return {ok:true};
+}
+
+export function setDeliveryOrder(db,{date,actor,done}){
+ if(!validDate(date)||date!==localDate())fail(400,'Solo puedes registrar el pedido de hoy.');
+ const existing=db.prepare('SELECT person_id FROM delivery_orders WHERE date=?').get(date);
+ if(done){
+  if(existing)fail(409,'Este pedido ya está registrado.');
+  if(db.prepare('SELECT 1 FROM no_delivery_days WHERE date=?').get(date))fail(409,'Este día ya figura sin pedido a domicilio.');
+  db.prepare('INSERT INTO delivery_orders VALUES (?,?,?)').run(date,actor,new Date().toISOString());
+ }else{
+  if(!existing)fail(409,'Este pedido ya no está registrado.');
+  if(existing.person_id!==actor)fail(409,'Solo quien registró el pedido puede deshacerlo.');
+  db.prepare('DELETE FROM delivery_orders WHERE date=?').run(date);
  }
  return {ok:true};
 }

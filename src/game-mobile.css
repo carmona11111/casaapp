@@ -1,0 +1,130 @@
+.game-home,.settings-game-tabs {display:none}
+.character-banner-actions {display:none}
+.home-report {max-width:1280px}
+
+@media(max-width:700px) {
+  .scene-home .topbar {display:none}
+  .scene-home main.pool-main {padding:0 0 92px;background:#091c31}
+  .scene-home .classic-home.game-ready {display:none}
+  .game-home {display:block;color:#fff4db}
+  .game-world {position:relative;isolation:isolate;min-height:max(670px,calc(100dvh - 70px));overflow:hidden;background:url('/scenes/courtyard.webp') 54% center/cover no-repeat}
+  .game-world-shade {position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#071e3bdd 0%,#142b4780 20%,#132a3842 43%,#09182ce0 67%,#07182cf6 100%)}
+  .game-world:before {content:'';position:absolute;inset:0;pointer-events:none;border:7px solid #d9b56870;border-bottom:0;box-shadow:inset 0 0 0 2px #183753ba}
+  .game-hud {position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:7px;padding:16px 17px 0}
+  .game-hud-date {font:700 10px/1.25 Georgia,serif;color:#ffe0a0;text-shadow:0 2px 4px #000b}
+  .game-hud>div {display:flex;gap:5px}
+  .game-hud>div>span {display:flex;align-items:center;gap:3px;padding:6px 7px;border:1px solid #dfbb72;border-radius:99px;background:#10243ddf;color:#fff3d2;font-size:10px;font-weight:800;white-space:nowrap;box-shadow:0 3px 8px #06182a80}
+  .game-hud svg {color:#f6c669}
+  .game-world-heading {position:relative;z-index:2;max-width:90%;padding:28px 18px 0;text-align:center;margin:auto;text-shadow:0 2px 9px #000d}
+  .game-world-heading>span {font-size:10px;letter-spacing:.26em;color:#ffe3a5;font-weight:800}
+  .game-world-heading h1 {margin:7px 0 0;color:#fff5db;font:400 clamp(27px,7.5vw,39px)/1.02 Georgia,serif;letter-spacing:-.02em}
+  .game-castle-status {position:absolute;z-index:1;left:50%;top:24%;width:194px;height:224px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #f0c273d1;border-radius:50% 50% 45% 45%;background:radial-gradient(circle at 50% 42%,#396582ba,#0c2644e8 75%);box-shadow:0 0 0 6px #112b4799,0 8px 24px #071827ad,inset 0 0 28px #f9d89247}
+  .game-castle-status .castle-art {position:relative;top:0;right:auto;width:165px;aspect-ratio:1;opacity:1;margin:-9px 0 -18px}
+  .game-castle-status .castle-caption {display:none}
+  .game-castle-caption {display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 9px;border:1px solid #d5aa64;border-radius:12px;background:#0a2745e8;text-align:center;color:#fff2cf;text-shadow:0 2px 5px #0009}
+  .game-castle-caption span {font-size:8px;letter-spacing:.16em;color:#f5c978;font-weight:800}
+  .game-castle-caption strong {font:700 17px Georgia,serif}.game-castle-caption small {font-size:10px;color:#eee0c3}
+  .game-rooms {position:absolute;z-index:2;left:14px;right:14px;bottom:107px;display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .game-room {display:grid;grid-template-columns:47px minmax(0,1fr);grid-template-rows:24px 18px;align-items:center;column-gap:7px;text-align:left;min-height:78px;padding:10px 9px;border:1px solid #e5bc70;border-radius:15px;background:linear-gradient(125deg,#0c2b4bf2,#1a4668ed);box-shadow:inset 0 0 0 2px #fce2a91c,0 5px 12px #07172998;color:#fff8e7;transition:transform .16s ease,background .16s ease}
+  .game-room:active {transform:scale(.97)}.game-room:hover {background:#21547d}
+  .game-room-icon {grid-row:1/3;display:grid;place-items:center;width:46px;height:46px;border:2px solid #f1cf8b;border-radius:14px;background:radial-gradient(circle at 30% 20%,#e5b957,#a66e27);color:#102945;box-shadow:0 3px 6px #0018}
+  .game-room strong {font:700 16px Georgia,serif;line-height:1.1;white-space:nowrap}.game-room small {font-size:10px;line-height:1.1;color:#f1dfc1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .game-room-meals .game-room-icon {background:radial-gradient(circle at 30% 20%,#f6d59a,#b17442)}
+  .game-room-savings .game-room-icon {background:radial-gradient(circle at 30% 20%,#d3e6a4,#6f9352)}
+  .game-room-coop .game-room-icon {background:radial-gradient(circle at 30% 20%,#d9c8fa,#826db4)}
+  .game-companion {position:absolute;z-index:2;left:15px;right:15px;bottom:18px;display:flex;align-items:center;gap:9px;min-height:76px;padding:7px 12px 7px 5px;border:1px solid #e8c080;border-radius:16px;background:#fff7eaea;box-shadow:0 8px 18px #0009;color:#20394e}
+  .game-companion img {align-self:end;width:65px;height:66px;object-fit:contain;filter:drop-shadow(0 3px 3px #0003)}
+  .game-companion p {margin:0;font-size:12px;line-height:1.28}.game-companion strong {display:block;margin-bottom:3px;color:#916327;font:700 13px Georgia,serif}
+  .game-journal {position:relative;margin:-1px 0 0;padding:18px 17px 21px;border-top:3px solid #d9aa5b;background:linear-gradient(130deg,#f9edcf,#fff9ec 50%,#e8d4ac);color:#1d3448;box-shadow:inset 0 5px 8px #94703b42}
+  .game-journal-head {display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #d0aa6f;padding-bottom:9px}
+  .game-journal-head>span {display:flex;align-items:center;gap:6px;color:#80551e;font-weight:800;font-size:10px;letter-spacing:.1em}
+  .game-journal-head button {display:flex;align-items:center;gap:3px;color:#1a567c;font-size:11px;font-weight:800;white-space:nowrap}
+  .game-journal-progress {padding:13px 0 9px}.game-journal-progress>div:first-child {display:flex;justify-content:space-between;gap:8px}
+  .game-journal-progress strong {font:700 17px Georgia,serif}.game-journal-progress small {font-size:10px;text-align:right}
+  .game-progress-track {height:11px;margin-top:9px;overflow:hidden;border:1px solid #9c773e;border-radius:99px;background:#deceb1}
+  .game-progress-track span {display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#1d6498,#e1ae57);transition:width .35s ease}
+  .game-journal-metrics {display:flex;gap:6px;overflow-x:auto;padding:1px 0 12px}
+  .game-journal-metrics span {display:flex;align-items:center;gap:4px;flex:1;justify-content:center;min-width:max-content;padding:8px 6px;border:1px solid #d8ba83;border-radius:11px;background:#fff9ec;font-size:10px;font-weight:700}
+  .game-journal-metrics svg {color:#1c6b9c}
+  .game-journal-achievements {padding-top:11px;border-top:1px solid #d0aa6f}.game-journal-achievements>strong {font:700 18px Georgia,serif}.game-journal-achievements>p {margin:7px 0 0;font-size:12px;color:#5f6164}
+  .game-badge-strip {display:flex;gap:10px;overflow-x:auto;padding:10px 0;scroll-snap-type:x mandatory}.game-badge-strip>span {display:flex;flex-direction:column;align-items:center;flex:0 0 95px;padding:8px;border:1px solid #d8b272;border-radius:12px;background:#fff9ec;scroll-snap-align:start}
+  .game-badge-strip .sticker-art {width:58px;height:58px}.game-badge-strip small {font-size:11px;text-align:center;line-height:1.2}
+  .scene-home .home-report {padding:16px 14px;background:#f3e4c7}
+  .scene-home .mickey-report {margin:0;background:#fff7e6;border:2px solid #d9ad65}
+  .scene-home .mickey-report-head {display:grid;grid-template-columns:56px 1fr;gap:7px 10px;padding:12px}
+  .scene-home .mickey-report-head>img {width:55px;height:66px;grid-row:1/3}
+  .scene-home .mickey-report-head>div {grid-column:2;min-width:0}
+  .scene-home .mickey-report-head h2 {font-size:20px}.scene-home .mickey-report-head p {font-size:11px}
+  .scene-home .mickey-report-head>button {grid-column:2;margin:0;min-height:42px;width:100%}
+  .scene-home .mickey-report-body {padding:15px}
+  .scene-home .mickey-report-actions button {width:100%}
+
+  /* Rooms open as scenes with a readable parchment tray. */
+  .app-shell:not(.scene-home) .workspace {background:linear-gradient(180deg,#183a55,#efdcb7 390px,#ead9b8)}
+  .app-shell:not(.scene-home) main.pool-main {padding:13px 14px 38px}
+  .app-shell:not(.scene-home) .character-banner {min-height:clamp(285px,43dvh,370px);display:flex;align-items:flex-start;padding:27px 21px;margin-bottom:0;background-position:center;background-size:cover}
+  .app-shell:not(.scene-home) .character-banner:after {height:90px;background:linear-gradient(transparent,#0a1d31b5);border:0}
+  .app-shell:not(.scene-home) .character-banner-copy {max-width:69%;margin-top:3px}
+  .app-shell:not(.scene-home) .character-banner h1 {font:400 clamp(29px,8vw,38px)/1.04 Georgia,serif}
+  .app-shell:not(.scene-home) .character-banner p {font-size:12px}
+  .app-shell:not(.scene-home) .character-portrait {width:41%;height:78%;right:-2%}
+  .app-shell:not(.scene-home) .character-banner-actions {position:absolute;z-index:4;left:13px;right:13px;bottom:17px;display:flex;justify-content:center;gap:7px}
+  .app-shell:not(.scene-home) .character-banner-actions button {display:flex;align-items:center;justify-content:center;gap:5px;flex:1;min-width:0;min-height:50px;padding:5px 7px;border:1px solid #e9c47c;border-radius:13px;background:#102d4dde;box-shadow:inset 0 0 0 2px #fff0c529,0 4px 10px #07182b80;color:#ffebc6;font-size:11px;font-weight:800;text-shadow:0 1px 4px #0008}
+  .app-shell:not(.scene-home) .character-banner-actions button:active {transform:scale(.97)}
+  .app-shell:not(.scene-home) .character-banner-actions button svg {width:18px;height:18px;color:#f8ca77}
+  .scene-meals .character-banner-actions,.scene-savings .character-banner-actions {bottom:17px}
+  .scene-coop .character-banner-actions {bottom:46px}
+  .app-shell:not(.scene-home) .guide-feedback {position:relative;z-index:3;margin:-40px 10px 15px;padding:10px 12px;border:2px solid #d6a75d;border-radius:17px;background:#fff7e9;box-shadow:0 8px 18px #172d3a47}
+  .app-shell:not(.scene-home) .guide-feedback img {width:49px;height:60px}
+  .app-shell:not(.scene-home) .guide-feedback strong {font-size:17px}
+  .app-shell:not(.scene-home) .guide-feedback p {font-size:11px;line-height:1.35}
+  .app-shell.scene-meals .guide-feedback,.app-shell.scene-savings .guide-feedback {margin:12px 0 15px}
+  .app-shell:not(.scene-home) .page-heading {margin-top:19px}
+  .scene-meals .meals-overview {display:none}
+  .scene-meals .meals-nav {position:relative;z-index:2;margin:15px 0 18px}
+  .scene-meals .meals-nav button {min-height:69px;border:1px solid #d0a35d;background:#fff4dc;color:#153651;box-shadow:0 5px 11px #59422425;font-size:11px}
+  .scene-meals .meals-nav button.selected {background:#153e65;color:#ffedc7;border-color:#e6b96e}
+  .scene-meals .meals-week-grid {display:flex;gap:11px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;margin:0 -14px 19px;padding:3px 14px 13px;scrollbar-width:thin}
+  .scene-meals .meals-day {flex:0 0 min(84vw,360px);scroll-snap-align:center;box-shadow:0 8px 16px #5942242a}
+  .scene-meals .meals-day.today {border-color:#d5a35b}
+  .scene-meals .recipe-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .scene-meals .recipe-card {min-width:0}
+  .scene-meals .shopping-list {border:2px solid #d6b473;border-radius:16px;background:#fff9ec}
+  .scene-pools .moment-strip {position:relative;z-index:2;margin:-29px 10px 18px;box-shadow:0 7px 15px #132c3c34}
+  .scene-pools .pool-heading {margin-top:13px}
+  .scene-pools .pool-tabs {display:flex;overflow-x:auto;gap:8px;margin:0 -14px 17px;padding:3px 14px 12px;scroll-snap-type:x mandatory}
+  .scene-pools .pool-tabs button {flex:0 0 132px;min-height:65px;scroll-snap-align:start;background:#fff4dc;border-color:#d3aa65}
+  .scene-pools .pool-tabs button.selected {background:#163e64;color:#ffe8bb}
+  .scene-pools .pool-grid {display:flex;gap:11px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:3px 14px 15px}
+  .scene-pools .pool-task {flex:0 0 min(84vw,360px);min-height:220px;scroll-snap-align:center;border:2px solid #d9b874;box-shadow:0 8px 17px #6d4c242b}
+  .scene-pools .pool-task-foot {flex-wrap:wrap;justify-content:flex-start}
+  .scene-pools .pool-actions {flex-wrap:wrap}
+  .scene-pools .pool-actions .primary,.scene-pools .pool-actions .secondary {flex:1}
+  .scene-coop .coop-hero {position:relative;z-index:2;margin:-28px 7px 18px}
+  .scene-coop .coop-mission-grid,.scene-coop .coop-rewards {display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:3px 14px 16px}
+  .scene-coop .coop-mission-grid article,.scene-coop .coop-rewards .prize-card {flex:0 0 min(84vw,350px);scroll-snap-align:center;border:2px solid #d8af6c;box-shadow:0 8px 16px #563b2428}
+  .scene-coop .coop-mission-grid article {min-height:245px}
+  .scene-coop .coop-rewards .prize-card {min-height:255px}
+  .scene-savings .finance-section-tabs {position:relative;z-index:2;margin:0 0 18px;border:1px solid #d7af70;background:#fff1d1}
+  .scene-savings .finance-metrics article {border:2px solid #d6b576;box-shadow:0 7px 14px #49371f29}
+  .scene-savings .savings-goals {display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:3px 14px 16px}
+  .scene-savings .savings-goal {flex:0 0 min(82vw,350px);scroll-snap-align:center;border:2px solid #d4ae73;box-shadow:0 8px 17px #49371f2b}
+  .scene-activity .coop-album {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .scene-activity .coop-album .achievement-card {border:2px solid #d8b46d;box-shadow:0 7px 15px #4a351f24}
+  .settings-game-tabs {display:flex;gap:8px;overflow-x:auto;margin:18px -14px 14px;padding:2px 14px 12px;scroll-snap-type:x mandatory}
+  .settings-game-tabs button {display:flex;align-items:center;gap:6px;flex:0 0 auto;min-height:52px;padding:9px 12px;border:1px solid #d2a668;border-radius:12px;background:#fff3d8;color:#173d5b;scroll-snap-align:start;font-size:12px;font-weight:700}
+  .settings-game-tabs button.selected {background:#153d61;color:#ffebc4}
+  .scene-settings .pool-settings-group.game-hidden-mobile {display:none}
+  .scene-settings .pool-settings-group {border:2px solid #d5ae6d}
+}
+
+@media(max-width:380px) {
+  .game-world {min-height:max(645px,calc(100dvh - 70px))}
+  .game-world-heading {padding-top:22px}.game-world-heading h1 {font-size:28px}
+  .game-castle-status {top:26%;width:180px;height:210px}.game-castle-status .castle-art {width:152px}
+  .game-room {grid-template-columns:39px minmax(0,1fr);min-height:73px;padding:8px 7px;column-gap:5px}
+  .game-room-icon {width:39px;height:42px}.game-room strong {font-size:14px}.game-room small {font-size:9px}
+}
+
+@media(prefers-reduced-motion:reduce) {.game-room,.game-progress-track span {transition:none}}
+.motion-reduced .game-room,.motion-reduced .game-progress-track span,.motion-none .game-room,.motion-none .game-progress-track span {transition:none}

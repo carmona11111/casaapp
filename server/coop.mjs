@@ -2,6 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {addDays,localDate,monday} from './dates.mjs';
 import {aggregateShopping} from './meals.mjs';
 import {fail} from './store.mjs';
+import {profileAvatars} from './profile-avatars.mjs';
 
 export const effortXP=minutes=>minutes<=5?5:minutes<=15?10:minutes<=30?20:30;
 export const eventKinds={
@@ -43,8 +44,13 @@ const badgeDefinitions=[
  ['team_review','Reunión de equipo','📋','Revisar la casa en tres semanas'],
  ['fair_load','Carga compartida','⚖️','Dos semanas de reparto acordado por ambos'],
  ['goal_protected','Objetivo protegido','🔒','Cumplir un objetivo mensual de ahorro acordado'],
- ['return','Volvemos a la partida','🌱','Tres tareas tras una semana tranquila']
+ ['return','Volvemos a la partida','🌱','Tres tareas tras una semana tranquila'],
+ ['secret_double_cast','Doble reparto','?','Los dos habéis elegido una foto de perfil'],
+ ['secret_same_film','Del mismo cuento','?','Los dos perfiles son de la misma película o universo'],
+ ['secret_tandem_day','Un día, dos héroes','?','Los dos habéis completado una tarea el mismo día'],
+ ['secret_kitchen_magic','Magia entre fogones','?','Una comida casera y una tarea completadas el mismo día']
 ];
+const secretBadgeIds=new Set(['secret_double_cast','secret_same_film','secret_tandem_day','secret_kitchen_magic']);
 const bonusKeys=new Set(['boss','maintenance','delivery_pause','fair_load']);
 const sum=(rows,key)=>rows.reduce((n,row)=>n+row[key],0);
 const within=(day,start,end)=>day>=start&&day<=end;
@@ -201,11 +207,16 @@ export function coopState(db,{today=localDate(),epoch=db.prepare('SELECT started
   return tasks.some(y=>y.local_date<previousStart)&&tasks.filter(y=>within(y.local_date,previousStart,addDays(previousStart,6))).length<3&&tasks.filter(y=>within(y.local_date,monday(x.local_date),addDays(monday(x.local_date),6))).length>=3;
  });
  const ratedRecipes=new Set(db.prepare('SELECT DISTINCT recipe_id FROM recipe_ratings').all().map(x=>x.recipe_id));
- const conditions={joint_first:sharedSessions.length>0||events.some(x=>x.kind==='joint_clean'&&x.amount>=15),home_control:earnedAwards.has('home'),bathrooms:['t6','t7'].every(id=>tasksWeek.some(x=>x.template_id===id)),boss:!!occasional,maintenance:weeksHome.size>=4,delivery_pause:noDeliverySeven,week_resolved:planned.length>=5&&shoppingReady,tuppers:events.some(x=>x.kind==='meal_prep'&&x.amount>=4),recipe_collection:new Set(meals.filter(x=>ratedRecipes.has(x.recipe_id)).map(x=>x.recipe_id)).size>=5,fridge:sum(events.filter(x=>x.kind==='fridge_rescue'),'amount')>=3,first_saving:firstSaving,goal_25:bestSaved>=25000,goal_50:bestSaved>=50000,goal_75:bestSaved>=75000,goal_100:bestSaved>=100000,smart_shopping:events.filter(x=>x.kind==='budget_shop').length>=4,team_mode:jointWeeks.size>=3,team_review:reviewWeeks.size>=3,fair_load:fairWeeks.size>=2,goal_protected:!!db.prepare('SELECT 1 FROM coop_monthly_awards LIMIT 1').get(),return:returnBadge};
+ const portraits=db.prepare('SELECT person_id,avatar_key FROM profile_avatars').all();
+ const chosen=portraits.map(row=>profileAvatars.find(avatar=>avatar.key===row.avatar_key)).filter(Boolean);
+ const twoProfiles=db.prepare('SELECT COUNT(*) AS n FROM people WHERE active=1').get().n===2;
+ const taskPeopleByDay=new Map();
+ for(const task of tasks){const people=taskPeopleByDay.get(task.local_date)||new Set();people.add(task.person_id);taskPeopleByDay.set(task.local_date,people);}
+ const conditions={joint_first:sharedSessions.length>0||events.some(x=>x.kind==='joint_clean'&&x.amount>=15),home_control:earnedAwards.has('home'),bathrooms:['t6','t7'].every(id=>tasksWeek.some(x=>x.template_id===id)),boss:!!occasional,maintenance:weeksHome.size>=4,delivery_pause:noDeliverySeven,week_resolved:planned.length>=5&&shoppingReady,tuppers:events.some(x=>x.kind==='meal_prep'&&x.amount>=4),recipe_collection:new Set(meals.filter(x=>ratedRecipes.has(x.recipe_id)).map(x=>x.recipe_id)).size>=5,fridge:sum(events.filter(x=>x.kind==='fridge_rescue'),'amount')>=3,first_saving:firstSaving,goal_25:bestSaved>=25000,goal_50:bestSaved>=50000,goal_75:bestSaved>=75000,goal_100:bestSaved>=100000,smart_shopping:events.filter(x=>x.kind==='budget_shop').length>=4,team_mode:jointWeeks.size>=3,team_review:reviewWeeks.size>=3,fair_load:fairWeeks.size>=2,goal_protected:!!db.prepare('SELECT 1 FROM coop_monthly_awards LIMIT 1').get(),return:returnBadge,secret_double_cast:twoProfiles&&portraits.length===2,secret_same_film:twoProfiles&&chosen.length===2&&chosen[0].film===chosen[1].film&&portraits[0].avatar_key!==portraits[1].avatar_key,secret_tandem_day:[...taskPeopleByDay.values()].some(people=>people.size>=2),secret_kitchen_magic:meals.some(meal=>taskPeopleByDay.has(meal.date))};
  const now=new Date().toISOString();
  for(const [id,earned] of Object.entries(conditions))if(earned)db.prepare('INSERT OR IGNORE INTO coop_unlocks VALUES (?,?)').run(id,now);
  const unlocked=new Map(db.prepare('SELECT * FROM coop_unlocks').all().map(x=>[x.badge_id,x.earned_at]));
- const badges=badgeDefinitions.map(([id,title,icon,hint])=>({id,title,icon,hint,earned:unlocked.has(id),earned_at:unlocked.get(id)||null}));
+ const badges=badgeDefinitions.map(([id,title,icon,hint])=>({id,title:secretBadgeIds.has(id)&&!unlocked.has(id)?'???':title,icon,hint:secretBadgeIds.has(id)&&!unlocked.has(id)?'Una sorpresa aguarda en el castillo…':hint,secret:secretBadgeIds.has(id),earned:unlocked.has(id),earned_at:unlocked.get(id)||null}));
  const selectedId=db.prepare('SELECT badge_id FROM coop_profile WHERE id=1').get()?.badge_id;
  const selectedSticker=badges.find(x=>x.id===selectedId&&x.earned)||null;
  const awardCount=db.prepare('SELECT COUNT(*) AS n FROM coop_awards').get().n;

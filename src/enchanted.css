@@ -1,0 +1,265 @@
+/* Visual layer inspired by look.zip. Business state and controls remain in the existing components. */
+:root {
+  --night:#102235;
+  --navy:#172d46;
+  --ink:#172536;
+  --ivory:#fff8e9;
+  --gold:#d9b568;
+  --gold-dark:#a5752d;
+  --blue:#397cb0;
+  --green:#39735a;
+  --paper:#fff9ee;
+  --line:#e3cfaa;
+  --muted:#6b6670;
+  font-size:15px;
+  color:var(--ink);
+  background:#e8d9b8;
+}
+body {background:#e8d9b8;color:var(--ink)}
+h1,h2,h3 {font-family:Georgia,'Times New Roman',serif;color:var(--ink)}
+h2,h3 {font-weight:500}
+p {line-height:1.55}
+small,.fine,.muted {color:#685f60}
+.eyebrow {color:#93672d;letter-spacing:.15em}
+button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {outline:3px solid #57b8ea;outline-offset:3px}
+input,select,textarea {background:#fffdf8;border:1px solid #cfbb98;border-radius:11px;color:var(--ink)}
+input[type=checkbox] {accent-color:#1d577c}
+.primary,.secondary {border-radius:12px;font-size:13px;font-weight:700;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+.primary {color:#fff7e2;background:linear-gradient(135deg,#183856,#246095);border:1px solid #d3a658;box-shadow:inset 0 1px #ffffff44,0 5px 12px #10223524}
+.primary:hover {background:linear-gradient(135deg,#214d75,#2873ad);transform:translateY(-2px)}
+.secondary {background:#fff5e2;border:1px solid #c99a54;color:#172d46}
+.secondary:hover {background:#ffe9bd;transform:translateY(-2px)}
+.text-button {color:#1c577f}
+.app-shell {--room:#a4bad1;--room-deep:#234565;--room-glow:#e4c282;min-height:100dvh;background:linear-gradient(145deg,#d7c099,#f9edda 38%,#e8e2d2)}
+.app-shell.scene-home {--room:#90bee3;--room-deep:#174b83;--room-glow:#f6ce83}
+.app-shell.scene-pools,.app-shell.scene-settings {--room:#adc8d6;--room-deep:#355f80;--room-glow:#f3d69d}
+.app-shell.scene-meals {--room:#e9b07c;--room-deep:#74513e;--room-glow:#f8dc9b}
+.app-shell.scene-savings {--room:#a6aa9b;--room-deep:#2c4c45;--room-glow:#f5c16d}
+.app-shell.scene-coop,.app-shell.scene-activity {--room:#8ba0ca;--room-deep:#223c67;--room-glow:#efc581}
+.sidebar {z-index:30;width:244px;padding:22px 16px 18px;color:#f8edcf;background:
+  radial-gradient(circle at 105% 105%,#ad865342,transparent 32%),
+  radial-gradient(circle at 0 0,#52749b55,transparent 38%),
+  linear-gradient(175deg,#0b1b30,#142c48 65%,#091a2d);
+  border-right:2px solid #c6994c;box-shadow:8px 0 20px #0c203034}
+.sidebar:before {content:'';position:absolute;inset:8px;pointer-events:none;border:1px solid #e5bd6744;border-radius:12px}
+.sidebar .brand {justify-content:center;gap:8px;color:#ffdf94;font-size:25px;line-height:.98;text-shadow:0 2px 10px #0008;padding:13px 0 18px;border-bottom:1px solid #cba34e80}
+.sidebar .brand-icon {border-color:#d8aa5b;color:#ffdd8f;border-radius:50%;height:42px}
+.sidebar .brand span:not(.brand-icon) {color:#dbbc83;letter-spacing:.14em;font-size:8px}
+.sidebar .home-label {margin:24px 8px 17px;color:#eed69f;gap:7px}
+.sidebar .home-label .fine {color:#bfc8ca}
+.sidebar nav {gap:4px}
+.sidebar nav button {position:relative;color:#e7e4df;border:1px solid transparent;border-radius:10px;padding:9px 11px;font-size:13px;min-height:49px}
+.sidebar nav button svg {color:#ecc776}
+.sidebar nav button:hover {color:#fff4d6;background:#ffffff19}
+.sidebar nav button.active {color:#fff4d7;background:linear-gradient(115deg,#20527d,#153450);border-color:#d8a957;box-shadow:inset 0 1px #ffffff3e,0 4px 11px #0004;font-weight:700}
+.sidebar nav button.active:before {content:'✦';position:absolute;left:-10px;color:#ffe29d}
+.sidebar .nav-count {background:#e8bd6b;color:#102235;border-radius:99px}
+.sidebar-help {border-color:#c49d62;background:#10243a;color:#ffe3a4;border-radius:12px;margin-top:16px}
+.sidebar-note {position:relative;margin-top:auto;display:flex;align-items:center;gap:8px;padding:16px 4px 9px;color:#eedebc}
+.sidebar-note img {width:58px;height:69px;object-fit:contain;filter:drop-shadow(0 4px 9px #050e16)}
+.sidebar-note p {margin:0;color:#f8dfa7;font:italic 12px/1.4 Georgia,serif}
+.profile-switch {color:#f8e4b6;border-top-color:#d7a95866}
+.profile-switch small {color:#d5cdbb}
+.motion-setting {width:100%;min-height:37px;color:#d6cfbd;font-size:11px;text-align:left;padding:4px 10px;border-radius:8px}
+.motion-setting:hover {background:#ffffff16}
+.workspace {margin-left:244px;width:calc(100% - 244px);min-height:100vh;background:
+  linear-gradient(90deg,#203e6020 0 10px,transparent 10px calc(100% - 10px),#203e6020 calc(100% - 10px)),
+  radial-gradient(circle at 50% -80px,#fff5dc,#f3e9d6 38%,#e5d5b7 100%)}
+.topbar {height:64px;padding:0 32px;background:#102235;color:#eee0bf;border-bottom:2px solid #bc914f;box-shadow:0 5px 16px #0d1b2e30}
+.breadcrumb {color:#c9c6bd;font-size:12px}.breadcrumb strong {color:#ffdf9c;font-weight:700}.breadcrumb span {color:#a78b5d}
+.sync-status {color:#e1e1d5;font-size:11px}.sync-status .small-dot {background:#7bc9a6}
+main.pool-main {max-width:1480px;padding:29px clamp(18px,3vw,48px) 48px}
+.pool-main>div,.pool-main>section {animation:scene-appear .22s cubic-bezier(.2,.8,.2,1) both}
+.pool-main .page-heading h1 {color:#1d3048}
+footer {background:#102235;color:#d9c39c;border-top:1px solid #bd9253;text-align:center;letter-spacing:.1em}
+.mobile-dock {display:none}
+.menu-scrim {display:none}
+
+/* Staged rooms keep their text and buttons in the DOM; the architecture is purely decorative. */
+.character-banner {--banner-a:var(--room-deep);--banner-b:var(--room);min-height:246px;margin-bottom:21px;padding:32px 36px;border:2px solid #e5b667;border-radius:24px;box-shadow:inset 0 0 0 5px #fff4df55,0 14px 26px #18283938;background:
+  radial-gradient(circle at 78% 17%,#fff4bdaf 0 8%,transparent 24%),
+  linear-gradient(145deg,#0f2236b0,transparent 65%),
+  repeating-linear-gradient(90deg,transparent 0 16%,#fff9e211 16.1% 16.4%,transparent 16.5% 32%),
+  linear-gradient(130deg,var(--room-deep),var(--room))}
+.character-banner:before {content:'';position:absolute;inset:16px 19px 0 53%;border:9px solid #ebc88e;border-bottom:0;border-radius:50% 50% 0 0 / 42% 42% 0 0;box-shadow:inset 0 0 0 6px #355374,inset 0 0 0 11px #f1d9a666,0 0 0 2px #6a4b2c;opacity:.65;pointer-events:none}
+.character-banner:after {content:'';position:absolute;left:0;right:0;bottom:0;height:36px;background:linear-gradient(#ffffff08,#c48d4260);border-top:3px solid #f8dc9a55;pointer-events:none}
+.character-banner.guide-cenicienta {--room-deep:#265276;--room:#b2d7db}
+.character-banner.guide-ratatouille {--room-deep:#6c463a;--room:#d79b65}
+.character-banner.guide-gilito {--room-deep:#233d3d;--room:#ba925e}
+.character-banner-copy {max-width:min(69%,680px)}
+.character-banner .eyebrow {color:#ffdf96;font-size:11px}
+.character-banner h1 {color:#fff5df;font-size:clamp(29px,3.2vw,45px);text-shadow:0 2px 8px #0008}
+.character-banner p {color:#fff8e9;font-size:14px;text-shadow:0 1px 5px #0008}
+.character-portrait {right:3%;width:28%;height:105%;z-index:1}
+.character-portrait img {filter:drop-shadow(0 11px 8px #06152580)}
+.character-halo {background:radial-gradient(circle,#ffe9a584,#ffffff24 60%,transparent 72%)}
+.character-spark {z-index:2;animation:twinkle 7s ease-in-out infinite}
+.scene-home .character-banner,.scene-pools .character-banner,.scene-coop .character-banner {background:linear-gradient(90deg,#0d2949ef 0%,#164264cf 40%,#193b5466 68%,#133a4c21),url('/scenes/courtyard.webp') center 44%/cover}
+.scene-meals .character-banner {background:linear-gradient(90deg,#2b241eef 0%,#654937bf 46%,#362c2870 72%,#1d232739),url('/scenes/kitchen.webp') center 48%/cover}
+.scene-savings .character-banner,.scene-activity .character-banner,.scene-settings .character-banner {background:linear-gradient(90deg,#0e2239f0 0%,#233c50ca 43%,#27323c6e 72%,#1a2c3b33),url('/scenes/treasury.webp') center 48%/cover}
+.scene-home .character-banner:before,.scene-pools .character-banner:before,.scene-meals .character-banner:before,.scene-savings .character-banner:before,.scene-coop .character-banner:before,.scene-activity .character-banner:before,.scene-settings .character-banner:before {opacity:.18}
+.home-welcome .today-badge {background:#fff8e7;color:#17395d;border:1px solid #d2a459}
+
+.project-card {grid-template-columns:minmax(0,1fr) minmax(270px,.8fr);min-height:340px;background:
+  radial-gradient(circle at 83% 25%,#ffdb9696,transparent 27%),
+  linear-gradient(0deg,#10294f,#195382 70%,#69a9d4);border:2px solid #deb669;box-shadow:0 15px 32px #132a4350,inset 0 0 0 5px #fff4db2c}
+.project-card h2,.project-card p {color:#fff8e8}
+.project-kicker {color:#ffdf9e}
+.project-progress-track {background:#071d3c80;border:1px solid #f5d89996;height:15px}
+.project-progress-track span {background:linear-gradient(90deg,#e4ae50,#ffdb82)}
+.project-milestones>div>span {border-color:#e6c16c;color:#fff4df}
+.project-milestones>div.achieved>span {background:#d7a64d;color:#102235}
+.project-footer button {border-color:#e1b669;color:#ffedbe}
+.castle-art {width:min(100%,360px);filter:drop-shadow(0 12px 12px #06182c)}
+.castle-layer.is-visible {animation:build-reveal .75s ease-out both}
+.overview-360 {margin-top:24px}
+.overview-section-heading h2 {color:#162d46;font-size:26px}
+.overview-highlights button {min-height:179px;background:#fff9ed;border:1px solid #d6b77f;box-shadow:inset 0 0 0 3px #f9e9c8,0 7px 17px #63461f15;border-radius:16px}
+.overview-highlights button:hover {background:#fff3d8;border-color:#b98738;transform:translateY(-2px)}
+.overview-pillar-icon {background:#123d63;color:#f6ce7a}
+.overview-highlights strong {font-family:Georgia,serif;color:#172f4b}
+.overview-weekly-badges .overview-section-heading {flex-wrap:wrap;gap:7px}
+.overview-weekly-badges .overview-section-heading>div {min-width:0;flex:1 1 210px}
+.overview-weekly-badges .overview-section-heading button {margin-left:auto;white-space:normal;text-align:right}
+.overview-badges,.mickey-report,.guide-feedback,.pool-task,.my-claims,.pool-score-card,.pool-settings-group,.pool-editor,.coop-panel,.savings-goal,.savings-hero,.finance-card,.finance-metrics article,.meals-overview,.meals-day,.meals-empty,.no-delivery-card {background:#fff9ed;border:1px solid #d9bc88;box-shadow:inset 0 0 0 3px #ffffff8c,0 7px 19px #60461f12;border-radius:16px}
+.guide-feedback,.mickey-report {background:linear-gradient(105deg,#fff7e7,#eef4ed);color:#18304a}
+.guide-feedback .eyebrow,.mickey-report .eyebrow {color:#9e722f}
+.guide-feedback strong,.mickey-report h2 {color:#182f49}
+.guide-feedback p,.mickey-report p {color:#485263}
+.guide-feedback img,.mickey-report-head>img {filter:drop-shadow(0 4px 6px #25334733)}
+.mickey-report-body {border-top-color:#d6b886}
+.mickey-month,.mickey-next {background:#fffaf0;border-color:#ddc698}
+.pool-tabs button,.meals-nav button,.finance-section-tabs button {border-radius:12px}
+.pool-tabs button.selected,.meals-nav button.selected,.finance-section-tabs button.active {background:linear-gradient(135deg,#173b5d,#286690);border-color:#d0a050;color:#fff6de;box-shadow:0 4px 11px #1d395c37}
+.pool-tabs button.selected small {color:#e7e3d8}
+.pool-task h3,.pool-section-heading h2,.pool-heading h2 {color:#172d46}
+.task-symbol {background:#dbe9ec;color:#194b73}
+.pool-task-points {background:#f7e3ba;color:#805616}
+.pool-task-foot .primary,.pool-task-foot .secondary,.meal-complete-button {min-height:44px}
+.pool-task-zone,.pool-task-status,.pool-task-points {font-size:12px}
+.pool-task.is-claimed {border-color:#6e9bb4}
+.pool-task.is-done {background:#eef4ed}
+.meals-overview {background:linear-gradient(110deg,#563b2d,#a47048);color:#fff8e8;border-color:#d1a663}
+.meals-overview-icon {background:#174767;color:#ffe1a3}
+.meals-week-grid,.meals-recipe-grid,.meals-shopping-list {position:relative}
+.meals-day.today {box-shadow:inset 0 0 0 2px #cd9652,0 9px 19px #60461f22}
+.meals-slot,.recipe-card,.shopping-item {background:#fffdf7;border-color:#dbc39a}
+.savings-hero {background:linear-gradient(130deg,#f4e6c8,#fff9ea)}
+.savings-goal:before {content:'✦';display:block;color:#d3a348;font-size:17px}
+.savings-track>span,.coop-progress span {background:linear-gradient(90deg,#1e69a1,#dab15b)}
+.finance-section-tabs {background:#f7e7c6;border-color:#ccac72}
+.finance-section-tabs button {color:#183a56}
+.finance-metrics article strong,.finance-card h2 {color:#19324d}
+.finance-metrics .income {background:#eef8ed}.finance-metrics .expense {background:#fff0e7}.finance-metrics .saving {background:#eff2fa}.finance-metrics .available {background:#fff4db}
+.coop-hero>div {background:linear-gradient(130deg,#133e67,#3983a6);border:1px solid #c99c55}
+.coop-hero>div:nth-child(2) {background:linear-gradient(130deg,#776037,#bf9861)}
+.coop-hero>div:nth-child(3) {background:linear-gradient(130deg,#315b51,#6d9c7e)}
+.coop-mission-grid article,.coop-album .achievement-card,.coop-rewards .prize-card,.overview-badge {background:#fff7e8;border-color:#e3c691}
+.coop-album .achievement-card.locked {background:#f2eee5;border-color:#d6c6a7}
+.coop-album .achievement-card.earned,.overview-badge.earned {background:#fff4d8;border-color:#d4a956}
+.coop-mission-grid article.complete {background:#ecf5e7;border-color:#9cba89}
+.pool-settings-group h2 {color:#193b59}
+
+/* Castle entrance: profile choices stay real buttons and keep their current behavior. */
+.gate {position:relative;isolation:isolate;overflow:hidden;background:
+  linear-gradient(90deg,#102235bd,#10223533 30% 70%,#102235bd),
+  url('/scenes/courtyard.webp') center/cover}
+.gate:before {content:'';position:absolute;z-index:-1;inset:0;background:linear-gradient(0deg,#101f3a92,transparent 50%)}
+.gate:after {content:'';position:absolute;z-index:-1;left:-10%;right:-10%;bottom:-11%;height:30%;background:radial-gradient(ellipse,#f8c68478,transparent 67%)}
+.gate-card {max-width:570px;background:#fff9ebef;border:2px solid #e1b96f;border-radius:24px;box-shadow:inset 0 0 0 5px #ffffff89,0 30px 70px #091b2ba8;backdrop-filter:blur(5px)}
+.gate .brand {color:#173454}.gate-card h1 {color:#162d46}
+.gate-card>.muted {font-size:14px}
+.gate-character {width:110px;height:120px}
+.profile-options {flex-direction:row;justify-content:center;gap:18px}
+.profile-options button {flex:1;min-width:0;flex-direction:column;gap:8px;padding:18px 10px 13px;border:2px solid #c69b59;border-radius:18px;background:linear-gradient(#fff9eb,#ead2a7);box-shadow:0 7px 16px #59401f2b;color:#173454}
+.profile-options button:hover {transform:translateY(-3px);background:#fff0cc}
+.profile-options button .avatar {width:78px;height:78px;font:36px Georgia,serif;border:3px solid #fff4d8;box-shadow:0 0 0 2px #bb843e,0 4px 9px #0002}
+.profile-options button>svg {display:none}
+
+/* The existing seven-step guide becomes the castle storybook. */
+.onboarding-backdrop {background:linear-gradient(#061a2cc9,#061a2ce6),url('/scenes/treasury.webp') center/cover}
+.onboarding-dialog {border:2px solid #e2b76d;background:#fff8e8;box-shadow:0 30px 90px #051324a8,inset 0 0 0 5px #fffcf4;border-radius:22px}
+.onboarding-top {background:#102840;border-bottom:2px solid #d2a250;color:#ffe3a4}
+.onboarding-progress {background:#d9c7a5}.onboarding-progress span {background:linear-gradient(90deg,#24699c,#e4b95f)}
+.onboarding-body {background:linear-gradient(100deg,#fff7e5,#f3e1c3)}
+.onboarding-copy h2 {color:#162f49}.onboarding-copy>p {color:#485469}
+.onboarding-copy .eyebrow {color:#9d6c2c}
+.onboarding-facts>div {background:#fffaf0;border-color:#dec49a}
+.onboarding-facts>div>span {background:#19496e;color:#ffe4af}
+.onboarding-facts strong {color:#183651}.onboarding-facts p,.onboarding-note {color:#586171}
+.onboarding-art {background:linear-gradient(#10284655,#10284666),url('/scenes/courtyard.webp') center/cover;border:2px solid #d1a761}
+.onboarding-art:has(.castle-art) {background:linear-gradient(#10284655,#10284666),url('/scenes/courtyard.webp') center/cover}
+.onboarding-art-label {background:#fff8e7;color:#193853;border:1px solid #d8ae67}
+.onboarding-footer {background:#fff8e9;border-top:1px solid #ddc18e}
+.onboarding-step-control {color:#4c5562}.onboarding-step-control button {background:#c9b68e}.onboarding-step-control button.active {background:#1b5c88;box-shadow:0 0 0 3px #cbd7db}
+.reminder-backdrop {background:#071a2eb9}
+.reminder-dialog {background:#fff8e9;border-color:#d8aa64}
+.reminder-copy h2 {color:#19344f}.reminder-copy p {color:#4d5766}.reminder-kicker {color:#a27434}
+.reminder-primary {background:#1c5279;color:#fff2cf}.reminder-primary:hover {background:#143f61}
+.reminder-secondary {border-color:#cda76a;background:#fff5e1;color:#1c5279}
+
+@keyframes twinkle {0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+@keyframes scene-appear {from{opacity:.75;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes build-reveal {from{opacity:0;filter:brightness(1.8) drop-shadow(0 0 12px #ffdf95)}to{opacity:1;filter:drop-shadow(0 8px 9px #17173868)}}
+
+@media(max-width:1200px) {
+  .sidebar {width:210px}.workspace {margin-left:210px;width:calc(100% - 210px)}
+  .sidebar .brand {font-size:22px}.sidebar nav button {font-size:12px}
+}
+@media(max-width:700px) {
+  :root {font-size:15px}
+  .sidebar {width:min(82vw,300px);padding:20px 17px 95px;box-shadow:14px 0 35px #071c2c8c}
+  .sidebar.is-open {transform:translateX(0)}
+  .menu-scrim {display:block;position:fixed;inset:0;z-index:29;background:#081a2ca6;min-height:0;border:0}
+  .workspace {margin-left:0;width:100%;padding-bottom:73px}
+  .topbar {height:55px;padding:0 14px;z-index:12}
+  .topbar .mobile-menu {color:#ffdd9c}
+  .breadcrumb {font-size:10px}.breadcrumb span {margin:0 4px}
+  .sync-status {font-size:0}.sync-status svg,.sync-status .small-dot {font-size:initial}
+  main.pool-main {padding:15px 14px 32px}
+  .mobile-dock {position:fixed;z-index:25;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);gap:3px;min-height:69px;padding:6px 8px max(5px,env(safe-area-inset-bottom));border-top:2px solid #d0a35a;background:#10243b;box-shadow:0 -7px 23px #1123366b}
+  .mobile-dock button {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:51px;border-radius:11px;color:#e7e7e2;font-size:10px}
+  .mobile-dock button svg {color:#f2c97c}.mobile-dock button.active {background:#24567d;color:#fff1cc;box-shadow:inset 0 0 0 1px #d8ae65}
+  .mobile-dock button:active {transform:scale(.97)}
+  footer {display:none}
+  .character-banner {min-height:228px;padding:20px 18px;margin-bottom:13px;border-radius:18px}
+  .character-banner:before {left:48%;inset-block:10px 0;border-width:6px}
+  .character-banner-copy {max-width:68%}
+  .character-banner h1 {font-size:clamp(25px,7vw,33px)}
+  .character-banner p {font-size:11px}
+  .character-portrait {width:34%;right:-1%;height:78%}
+  .guide-ratatouille .character-portrait {width:35%;right:-1%}
+  .guide-cenicienta .character-portrait {width:30%}.guide-gilito .character-portrait {width:31%}
+  .home-welcome .today-badge {margin:-4px 0 11px auto}
+  .project-card {display:flex;flex-direction:column-reverse;align-items:stretch;gap:0;padding:13px 17px 19px;min-height:0}
+  .project-card .castle-art {position:relative;top:auto;right:auto;width:min(68vw,260px);opacity:1;aspect-ratio:1;margin:-22px auto -5px}
+  .project-card .project-copy {max-width:none}
+  .project-card h2 {font-size:29px;max-width:none}.project-card p {font-size:12px;max-width:none}
+  .project-footer {gap:10px;flex-wrap:wrap}
+  .overview-360 {margin-top:20px}
+  .overview-section-heading h2 {font-size:24px}
+  .overview-highlights button {min-height:156px}
+  .pool-tabs {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pool-grid {grid-template-columns:1fr}
+  .profile-options {flex-direction:row}.profile-options button .avatar {width:65px;height:65px}
+  .onboarding-backdrop,.reminder-backdrop {z-index:50}
+}
+@media(max-width:420px) {
+  .overview-pillar-grid {grid-template-columns:1fr 1fr}
+  .overview-highlights button {padding:13px;min-height:169px}
+  .overview-highlights strong {font-size:16px}
+  .overview-highlights small,.guide-feedback p,.mickey-report p {font-size:12px}
+  .pool-task h3 {font-size:17px}
+  .meals-nav button {font-size:11px}
+  .shopping-item {min-height:48px}
+  .profile-options {gap:10px}.profile-options button {padding:12px 5px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .pool-main>div,.pool-main>section,.character-spark,.castle-layer.is-visible {animation:none!important}
+  .primary,.secondary,.overview-highlights button,.profile-options button {transition:none!important}
+}
+.motion-reduced .pool-main>div,.motion-reduced .pool-main>section,.motion-reduced .character-spark,.motion-reduced .castle-layer.is-visible,
+.motion-none .pool-main>div,.motion-none .pool-main>section,.motion-none .character-spark,.motion-none .castle-layer.is-visible {animation:none!important}
+.motion-reduced .primary,.motion-reduced .secondary,.motion-reduced .overview-highlights button,.motion-reduced .profile-options button,
+.motion-none * {transition:none!important;scroll-behavior:auto!important}
+.motion-none * {animation:none!important}

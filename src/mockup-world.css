@@ -1,0 +1,245 @@
+/* The look.zip plates are temporary scenery. Every number and control above them is live DOM. */
+:root {
+  --royal-ink:#102239;
+  --royal-gold:#d9ad63;
+  --royal-paper:#fff6e5;
+}
+
+.app-shell {--world-art:url('/mockups/02_inicio_y_tareas.png');--world-y:top}
+.scene-pools {--world-y:bottom;--world-clean:url('/scenes/courtyard.webp')}
+.scene-meals {--world-art:url('/mockups/03_menu_y_recetario.png');--world-y:top;--world-clean:url('/scenes/kitchen.webp')}
+.scene-meals:has(.view-recipes) {--world-y:bottom}
+.scene-meals:has(.view-shopping) {--world-art:url('/mockups/04_compra_y_nueva_receta.png');--world-y:top}
+.scene-meals:has(.recipe-editor) {--world-art:url('/mockups/04_compra_y_nueva_receta.png');--world-y:bottom}
+.scene-savings {--world-art:url('/mockups/05_resumen_economico_e_ingresos.png');--world-y:top;--world-clean:url('/scenes/treasury.webp')}
+.scene-savings:has(.view-income) {--world-y:bottom}
+.scene-savings:has(.view-expense) {--world-art:url('/mockups/06_gastos_y_viajes.png');--world-y:top}
+.scene-savings:has(.view-savings) {--world-art:url('/mockups/06_gastos_y_viajes.png');--world-y:bottom}
+.scene-coop {--world-art:url('/mockups/07_misiones_y_premios.png');--world-y:top;--world-clean:url('/scenes/treasury.webp')}
+.scene-coop:has(.view-rewards) {--world-y:bottom}
+.scene-activity {--world-art:url('/mockups/08_logros_y_organizacion.png');--world-y:top;--world-clean:url('/scenes/treasury.webp')}
+.scene-settings {--world-art:url('/mockups/08_logros_y_organizacion.png');--world-y:bottom;--world-clean:url('/scenes/treasury.webp')}
+
+.workspace {position:relative;isolation:isolate;background:#223146}
+.workspace::before {
+  content:'';position:fixed;z-index:-2;top:0;right:0;bottom:0;left:244px;
+  background-image:var(--world-art);background-position:center var(--world-y);
+  background-size:cover;background-repeat:no-repeat;pointer-events:none;filter:blur(5px) saturate(1.1)
+}
+.workspace::after {
+  content:'';position:fixed;z-index:-1;top:0;right:0;bottom:0;left:244px;
+  background:linear-gradient(180deg,#091a2aa1 0%,#14223566 34%,#151c2696 100%);pointer-events:none
+}
+.workspace>main,.workspace>header,.workspace>footer {position:relative}
+.workspace .topbar {background:#091b2bdc;backdrop-filter:blur(10px)}
+.workspace main.pool-main {max-width:1320px}
+.workspace main.pool-main>h2 {color:#fff6dd;text-shadow:0 2px 8px #0d1c2a}
+
+.scene-pools .character-banner,
+.scene-meals .character-banner,
+.scene-savings .character-banner,
+.scene-coop .character-banner,
+.scene-activity .character-banner,
+.scene-settings .character-banner {
+  min-height:245px;background:linear-gradient(90deg,#081c30fd,#102944e8 65%,#10294475);
+  border:1px solid #e3ba72;box-shadow:0 14px 34px #07162579,inset 0 0 0 4px #ffe6ad34
+}
+.character-banner:before {display:none}
+.character-banner h1 {font-size:clamp(33px,4vw,54px);line-height:1.02}
+.character-banner-copy {max-width:67%}
+.character-banner p {max-width:610px;font-size:16px}
+.character-portrait {width:25%;right:5%;height:115%}
+.character-banner-actions {display:flex;gap:9px;position:relative;z-index:5;margin-top:22px}
+.character-banner-actions button {
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;
+  padding:10px 17px;border:1px solid #e1b669;border-radius:12px;
+  background:#102b49e8;color:#fff2ce;font-weight:700;box-shadow:inset 0 1px #fff5,0 5px 11px #08162e6b
+}
+.character-banner-actions button:hover {background:#255b82}
+
+.page-heading {background:#fff5e5f2;border:1px solid #d6aa68;border-radius:16px;padding:15px 22px;box-shadow:0 9px 25px #0c1c2a70}
+.page-heading h1 {font-size:clamp(29px,3vw,43px)}
+.page-heading p {margin-bottom:0}
+.guide-feedback,.mickey-report,.pool-task,.my-claims,.pool-score-card,.pool-settings-group,.pool-editor,.coop-panel,.savings-goal,.savings-hero,.finance-card,.finance-metrics article,.meals-overview,.meals-day,.meals-empty,.no-delivery-card,.recipe-editor,.shopping-list,.shopping-item,.savings-form-card,.savings-avoided,.savings-history {
+  background:#fff7e9f5;border:1px solid #d5ae72;box-shadow:inset 0 0 0 3px #fffdfa86,0 8px 25px #0b192b42
+}
+.pool-task,.recipe-card,.prize-card,.achievement-card {transition:transform .18s ease,box-shadow .18s ease}
+.pool-task:hover,.recipe-card:hover,.prize-card:hover,.achievement-card:hover {transform:translateY(-2px);box-shadow:0 12px 24px #0c1c2b4d}
+.pool-tabs,.meals-nav,.finance-section-tabs,.settings-game-tabs,.coop-view-tabs {
+  padding:7px;border:1px solid #cda35b;border-radius:15px;background:#fff4dded;
+  box-shadow:0 9px 25px #091a2c57
+}
+.pool-tabs button,.meals-nav button,.finance-section-tabs button,.settings-game-tabs button,.coop-view-tabs button {min-height:44px}
+.pool-tabs button.selected,.meals-nav button.selected,.finance-section-tabs button.active,.coop-view-tabs button.selected {
+  background:linear-gradient(130deg,#123553,#1d5684);border:1px solid #d5a757;color:#fff3d8
+}
+.pool-grid,.coop-mission-grid,.coop-rewards,.coop-album,.savings-goals {gap:16px}
+.task-pools-section,.coop-panel,.savings-content,.finance-page,.meals-page {position:relative}
+.pool-section-heading,.meals-section-heading,.coop-heading,.finance-history-head {background:#fff6e8ed;border:1px solid #d4aa70;border-radius:14px;padding:13px 18px;box-shadow:0 6px 20px #0c1b2a3c}
+.pool-heading {padding:15px 19px;background:#fff6e8f4;border:1px solid #d4aa70;border-radius:14px;box-shadow:0 7px 19px #0d1c2b46}
+.coop-panel .coop-heading,.finance-card .finance-history-head {box-shadow:none}
+.pool-task {border-width:2px}
+.pool-task h3 {font-size:22px}
+.task-room-map {position:relative;isolation:isolate;display:grid;grid-template-columns:42% 1fr;gap:10px 18px;min-height:325px;margin:17px 0;padding:20px;border:2px solid #d8ac66;border-radius:18px;overflow:hidden;background:#fff7e9f5;box-shadow:0 9px 25px #07172666}
+.task-room-map::before {content:'';position:absolute;z-index:-1;top:0;bottom:0;left:0;width:42%;background:url('/mockups/02_inicio_y_tareas.png') -191px -947px/1024px 1536px no-repeat}
+.task-room-map::after {content:'';position:absolute;z-index:-1;top:0;bottom:0;left:0;width:42%;background:linear-gradient(90deg,#061c3030,#102a4366)}
+.task-room-map-head,.task-room-map-doors {grid-column:2}
+.task-room-map-head {display:flex;align-items:center;justify-content:space-between;gap:12px}
+.task-room-map-head h2 {font:700 29px Georgia,serif;margin:0 0 5px}
+.task-room-map-head p {margin:0;font-size:13px;color:#52616b}
+.task-room-map-head .eyebrow {margin:0 0 3px}
+.task-room-map-doors {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-content:start}
+.task-room-map-doors button {display:grid;grid-template-columns:34px 1fr;grid-template-rows:22px 19px;align-items:center;gap:0 5px;min-height:66px;padding:9px;border:1px solid #d5af72;border-radius:12px;background:#fffdf7;color:#183a55;text-align:left;box-shadow:0 3px 7px #0c1e2b24}
+.task-room-map-doors button:hover,.task-room-map-doors button.selected {border-color:#e4bc76;background:#173b60;color:#fff4d8}
+.task-room-map-icon {grid-row:1/3;display:grid;place-items:center;width:32px;height:32px;border-radius:8px;background:#d7a957;color:#173b5c}
+.task-room-map-doors strong {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.task-room-map-doors small {font-size:10px;color:#626b70}
+.task-room-map-doors button.selected small,.task-room-map-doors button:hover small {color:#f1dfc3}
+.pool-task .primary,.recipe-editor .primary,.finance-form .primary,.savings-form-card .primary,.coop-panel .primary {
+  background:linear-gradient(135deg,#102e50,#1c6394);border-color:#d5a04e;color:#fff5de
+}
+.pool-task .secondary,.meals-nav button,.finance-section-tabs button {font-weight:700}
+.meals-overview {background:#fff3d9ed;color:#19324b}
+.meals-overview h2,.meals-overview p {color:#19324b}
+.meals-day,.recipe-card,.shopping-item {background:#fff8eaf7}
+.meals-recipe-photo img,.recipe-card img {object-fit:cover}
+.finance-metrics article {min-height:102px;display:flex;flex-direction:column;justify-content:center}
+.finance-metrics article strong {font:700 clamp(22px,2.2vw,33px) Georgia,serif}
+.finance-card,.savings-goal,.coop-panel {border-radius:17px}
+.finance-overview-grid,.finance-actions-grid,.coop-two-col {gap:16px}
+.coop-mission-grid article,.coop-rewards .prize-card,.coop-album .achievement-card {background:#fff7eaf5;border:1px solid #d5ad6f;box-shadow:0 7px 15px #101a2840}
+.coop-mission-grid article {min-height:215px}
+.coop-mission-icon {font-size:40px;filter:drop-shadow(0 4px 3px #61401845)}
+.coop-rewards .prize-card,.coop-rewards .prize-card.locked {background:#fff7e9f5;border:1px solid #d2aa6b}
+.coop-rewards .prize-illustration,.coop-rewards .prize-card.ready .prize-illustration {background:radial-gradient(circle at 40% 20%,#7fb0c0,#173454 67%,#081c31);border:2px solid #c79a55;box-shadow:inset 0 0 20px #ffe5a956,0 5px 10px #10203646;filter:none;opacity:1}
+.prize-illustration span {display:grid;place-items:center;color:#ffe3a4}
+.prize-illustration span svg {position:static;width:52px;height:52px;color:#ffe3a4;filter:drop-shadow(0 2px 3px #081a2d)}
+.prize-illustration>svg {color:#fff1d0;background:#122944;border-radius:50%;padding:3px}
+.coop-rewards .prize-cost {background:#153b5f;color:#fff2d5}
+.coop-rewards .prize-content>strong {color:#183a5a;font:700 19px Georgia,serif}
+.coop-rewards .prize-content>p {color:#56636a}
+@media(max-width:520px) {.prize-illustration span svg {width:37px;height:37px}}
+.savings-hero {background:linear-gradient(130deg,#fff6dff6,#efd3a4ed)}
+.savings-goal:before {font-size:23px}
+.savings-goal-icon {font-size:35px}
+.pool-settings-group {padding:17px}
+.pool-setting-row {background:#fffcf4;border:1px solid #e0c89e;border-radius:12px}
+.settings-game-tabs {display:flex;gap:7px;margin:16px 0}
+.settings-game-tabs button {display:flex;align-items:center;justify-content:center;gap:6px;flex:1;border-radius:9px;color:#173652}
+.settings-game-tabs button.selected {background:#193d63;color:#fff2d3}
+.coop-view-tabs {display:flex;gap:8px;margin:0 0 16px}
+.coop-view-tabs button {flex:1;border-radius:10px;color:#173752;font-weight:700}
+.coop-page.view-missions .coop-prize-shop {display:none}
+.coop-page.view-rewards .coop-mission-panel,
+.coop-page.view-rewards .coop-achievements,
+.coop-page.view-rewards .coop-agreements,
+.coop-page.view-rewards .coop-two-col {display:none}
+.coop-page.view-missions .coop-fund-panel,.coop-page.view-missions .coop-redemptions {display:none}
+
+.gate {
+  background:linear-gradient(180deg,#09152621,#08152598 75%),url('/mockups/01_acceso_y_guia.png') center top/cover no-repeat #14263b
+}
+.gate:before {background:linear-gradient(0deg,#061425ef,transparent 23%)}
+.gate-card {background:#0a1b2dde;border:1px solid #d6a65b;box-shadow:0 24px 60px #020917ad,inset 0 0 0 3px #e9b97638}
+.gate-card .brand,.gate-card h1,.gate-card .muted {color:#fff1d7;text-shadow:0 2px 8px #000a}
+.gate-card .fine {color:#ead6ae}
+.gate-card h1 {font-size:clamp(36px,5vw,65px);line-height:1.03}
+.profile-options button {background:linear-gradient(#fff9e5,#eed7ae);border:2px solid #a96c2b;box-shadow:0 7px 15px #0009}
+.profile-options button .avatar {background:#fff9e7!important;color:#172d46!important;width:104px;height:104px;font:52px Georgia,serif}
+.onboarding-backdrop {background-image:linear-gradient(#05132180,#051321b3),url('/mockups/01_acceso_y_guia.png');background-size:auto 200%;background-position:center bottom}
+.onboarding-dialog {background:#fff7e6;border:2px solid #d6a965;box-shadow:0 26px 70px #07101cbd}
+
+@media(min-width:701px) {
+  .scene-home .classic-home.game-ready {display:none}
+  .scene-home .game-home {display:block}
+  .scene-home main.pool-main {max-width:none;padding:0 0 42px}
+  .scene-home .game-world {position:relative;isolation:isolate;min-height:690px;overflow:hidden;background:#18384e}
+  .scene-home .game-world::before {
+    content:'';position:absolute;z-index:-2;inset:0;
+    background:url('/mockups/02_inicio_y_tareas.png') right top / calc(100% + 190px) auto no-repeat
+  }
+  .scene-home .game-world::after {content:'';position:absolute;z-index:-1;top:10%;right:2%;bottom:2%;width:365px;border:1px solid #d2aa6880;border-radius:21px;background:#0b2139f5;box-shadow:0 12px 36px #08162596}
+  .scene-home .game-world-shade {position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,#081b2be8 0%,#081b2b73 32%,#0b213630 61%,#091928b8 100%)}
+  .scene-home .game-hud {display:flex;align-items:center;justify-content:space-between;padding:19px 35px;color:#fff1cb}
+  .scene-home .game-hud-date {font-weight:800;text-shadow:0 2px 6px #000}
+  .scene-home .game-hud>div {display:flex;gap:9px}
+  .scene-home .game-hud>div>span {display:flex;align-items:center;gap:6px;background:#0c253ecf;border:1px solid #d9ae69;border-radius:99px;padding:8px 13px;font-weight:800;color:#fff4d5}
+  .scene-home .game-world-heading {position:absolute;left:3%;top:12%;max-width:51%;padding:18px 22px;border-radius:16px;background:#081c30f1;text-shadow:0 3px 11px #061528}
+  .scene-home .game-world-heading>span {color:#f5cf83;font-weight:800;letter-spacing:.25em}
+  .scene-home .game-world-heading h1 {font:400 clamp(42px,5vw,78px)/.99 Georgia,serif;color:#fff4df;margin:12px 0}
+  .scene-home .game-castle-status {position:absolute;right:3%;top:12%;display:flex;align-items:center;gap:13px;width:330px;min-height:205px;padding:15px;background:#fff7e9ef;border:2px solid #d8ae6d;border-radius:18px;box-shadow:0 12px 26px #04101a9c}
+  .scene-home .game-castle-status .castle-art {width:130px;flex:0 0 130px;filter:drop-shadow(0 5px 5px #0b1b2a6b)}
+  .scene-home .game-castle-caption {display:grid;gap:6px}
+  .scene-home .game-castle-caption span {font-size:10px;font-weight:900;letter-spacing:.12em;color:#9b6725}
+  .scene-home .game-castle-caption strong {font:700 23px Georgia,serif;color:#142f4a}
+  .scene-home .game-castle-caption small {font-size:13px;color:#526173}
+  .scene-home .game-rooms {position:absolute;right:3%;top:calc(12% + 216px);width:330px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .scene-home .game-room {display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:88px;padding:12px;border:2px solid #d2a65e;border-radius:13px;background:#fff8eaf2;color:#18344e;text-align:left;box-shadow:0 8px 19px #07152480}
+  .scene-home .game-room:hover {transform:translateY(-2px);background:#fff2d8}
+  .scene-home .game-room-icon {display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:9px;background:#1b5280;color:#ffdb96}
+  .scene-home .game-room strong {font:700 17px Georgia,serif}
+  .scene-home .game-room small {flex-basis:100%;font-size:11px;color:#5b6370}
+  .scene-home .game-companion {position:absolute;left:4%;bottom:5%;display:flex;align-items:center;gap:12px;max-width:385px;padding:8px 18px 8px 5px;background:#fff7e8eb;border:2px solid #d7ad6c;border-radius:17px;box-shadow:0 12px 27px #0714248a}
+  .scene-home .game-companion img {width:68px;height:77px;object-fit:contain}
+  .scene-home .game-companion p {margin:0;font-size:13px;color:#243e50}
+  .scene-home .game-companion strong {display:block;font:700 20px Georgia,serif;color:#8e5d23}
+  .scene-home .game-journal {margin:22px auto;max-width:1170px;padding:22px 28px;background:#fff7e8f5;border:2px solid #d8b57f;border-radius:17px;box-shadow:0 12px 30px #0817287d}
+  .scene-home .game-journal-head,.scene-home .game-journal-progress>div:first-child,.scene-home .game-journal-metrics {display:flex;justify-content:space-between;gap:10px}
+  .scene-home .game-journal-head>span {display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:.12em;color:#95662e}
+  .scene-home .game-journal-head button {display:flex;align-items:center;gap:6px;color:#1b5b83;font-weight:700}
+  .scene-home .game-journal-progress {margin:15px 0}
+  .scene-home .game-journal-progress strong {font:700 20px Georgia,serif}
+  .scene-home .game-progress-track {height:13px;background:#e7d5b4;border:1px solid #b48447;border-radius:99px;overflow:hidden}
+  .scene-home .game-progress-track span {display:block;height:100%;background:linear-gradient(90deg,#286b9f,#dcb460);border-radius:inherit}
+  .scene-home .game-journal-metrics span {display:flex;align-items:center;gap:8px;padding:10px 15px;background:#fffdf8;border:1px solid #d6b785;border-radius:10px}
+  .scene-home .game-journal-achievements {margin-top:14px;padding-top:13px;border-top:1px solid #d7bd91}
+  .scene-home .game-journal-achievements>strong {font:700 19px Georgia,serif}
+  .scene-home .game-badge-strip {display:flex;gap:14px;margin-top:10px}
+  .scene-home .game-badge-strip>span {display:grid;justify-items:center;gap:5px;width:112px;padding:10px;border:1px solid #d6ad6f;border-radius:12px;background:#fffdf7}
+  .scene-home .home-report {max-width:1170px;margin:22px auto}
+}
+
+@media(max-width:700px) {
+  html,body {overflow-x:clip}
+  .workspace::before,.workspace::after {left:0}
+  .workspace::before {background-image:var(--world-clean);background-position:center top;background-size:cover;filter:saturate(.95)}
+  .workspace::after {background:linear-gradient(180deg,#091e32a8 0%,#1723374d 250px,#102238a1 100%)}
+  .app-shell:not(.scene-home) .workspace {background:#172c42}
+  .app-shell:not(.scene-home) main.pool-main {padding:12px 12px 96px;background:transparent}
+  .app-shell:not(.scene-home) .character-banner {min-height:260px;padding:19px;margin-bottom:15px;background:linear-gradient(90deg,#0a203bf2,#0a203bb9);border:2px solid #d5a963}
+  .app-shell:not(.scene-home) .character-banner-copy {max-width:73%}
+  .app-shell:not(.scene-home) .character-banner h1 {font-size:clamp(28px,8vw,38px)}
+  .app-shell:not(.scene-home) .character-banner p {font-size:12px}
+  .app-shell:not(.scene-home) .character-portrait {width:35%;height:77%;right:-2%}
+  .app-shell:not(.scene-home) .character-banner-actions {position:absolute;left:12px;right:12px;bottom:14px;display:flex;margin:0;gap:6px}
+  .app-shell:not(.scene-home) .character-banner-actions button {flex:1;min-width:0;min-height:48px;padding:7px 3px;font-size:11px}
+  .app-shell:not(.scene-home) .page-heading {padding:14px}
+  .app-shell:not(.scene-home) .page-heading h1 {font-size:29px}
+  .scene-meals .meals-week-grid {margin-inline:-12px;padding-inline:12px}
+  .scene-pools .pool-tabs {width:100%;max-width:100%;min-width:0;margin:0 0 17px;overflow-x:auto}
+  .task-room-map {display:block;min-height:0;padding:0 12px 13px;margin:15px 0}
+  .task-room-map::before,.task-room-map::after {bottom:auto;width:100%;height:180px}
+  .task-room-map::before {background-position:-190px -966px}
+  .task-room-map::after {background:linear-gradient(180deg,#0b2545ae,#102b48f2)}
+  .task-room-map-head {position:relative;display:block;min-height:178px;padding:13px 3px;color:#fff1d0}
+  .task-room-map-head .eyebrow,.task-room-map-head h2,.task-room-map-head p {color:#fff1d0}
+  .task-room-map-head h2 {font-size:27px}
+  .task-room-map-head .secondary {margin-top:11px;min-height:38px}
+  .task-room-map-doors {position:relative;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .scene-meals .meals-day {flex-basis:min(86vw,355px)}
+  .coop-view-tabs {position:sticky;top:56px;z-index:9}
+  .settings-game-tabs {display:flex;overflow-x:auto;scroll-snap-type:x mandatory}
+  .settings-game-tabs button {min-width:130px;scroll-snap-align:start}
+  .scene-home .game-world {background-image:url('/scenes/courtyard.webp');background-size:cover;background-position:55% center}
+  .scene-home .game-world-shade {background:linear-gradient(180deg,#071e3be5,#10233b80 28%,#09182ce9 68%,#07182cf8)}
+  .scene-home .game-room {border-color:#e5bc70}
+  .scene-home .game-journal {background:#fff7e8}
+  .gate {background-size:auto 200%,auto 200%;background-position:center top,center top}
+  .gate-card {background:#091a2be8}
+  .gate-card h1 {font-size:35px}
+  .profile-options button .avatar {width:72px;height:72px;font-size:38px}
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .pool-task,.recipe-card,.prize-card,.achievement-card {transition:none}
+}

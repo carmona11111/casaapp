@@ -41,7 +41,7 @@ async function check(info) {
   const savingsData = await savings.json();
   if (!Array.isArray(savingsData.goals) || !Array.isArray(savingsData.preparation)) throw new Error('La API de ahorro no responde correctamente.');
   const page = await fetch(`http://127.0.0.1:${info.port}/entrada`, {signal: AbortSignal.timeout(1500)});
-  if (!page.ok || !(await page.text()).includes('Casa al día')) throw new Error('La pantalla de entrada no responde correctamente.');
+  if (!page.ok || !(await page.text()).includes('Hogar Encantado')) throw new Error('La pantalla de entrada no responde correctamente.');
   return data;
 }
 
