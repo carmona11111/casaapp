@@ -44,7 +44,7 @@ export function available(task,last,today){
 export function poolState(db,today=localDate()){
  initializePools(db);
  clearOldClaims(db,today);
- const people=db.prepare('SELECT p.id,p.name,p.color,p.active,NULL AS avatar_key FROM people p ORDER BY p.rowid').all();
+ const people=db.prepare('SELECT p.id,p.name,p.color,p.active,a.avatar_key FROM people p LEFT JOIN profile_avatars a ON a.person_id=p.id ORDER BY p.rowid').all();
  const scoreEpoch=db.prepare('SELECT started_at FROM score_epoch WHERE id=1').get().started_at;
  const tasks=db.prepare(`SELECT t.id,t.title,t.steps,t.minutes,t.active,t.pet,t.zone_id,z.name AS zone,p.pool,c.person_id AS claimed_by,c.claimed_at,pt.points AS custom_points
  FROM templates t JOIN zones z ON z.id=t.zone_id JOIN task_pools p ON p.template_id=t.id

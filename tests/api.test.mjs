@@ -347,12 +347,16 @@ test('Una receta planificada sin cocinar aparece en el aviso tras tres días',as
  assert.equal((await request('/api/meals/complete',{method:'POST',data:{actor:'ivan',date:older,slot:'dinner',completed:true}})).status,200);
  assert.ok(!(await request('/api/pool')).data.latePlannedMeals.some(row=>row.date===older&&row.slot==='dinner'));
 });
-test('Las fotos de perfil se restablecen y no se guardan',async()=>{
+test('Las fotos de ambos perfiles se guardan y descubren un logro secreto del mismo universo',async()=>{
  const before=(await request('/api/pool')).data;
- assert.equal(before.profileAvatars.length,0);
- assert.equal((await request('/api/profile/avatar',{method:'POST',data:{actor:'ivan',avatar_key:'05_anna'}})).status,400);
+ assert.equal(before.profileAvatars.filter(avatar=>!avatar.legacy).length,20);
+ assert.equal((await request('/avatars/05_anna.jpg')).status,200);
+ assert.equal((await request('/api/profile/avatar',{method:'POST',data:{actor:'ivan',avatar_key:'inventado'}})).status,400);
+ assert.equal((await request('/api/profile/avatar',{method:'POST',data:{actor:'ivan',avatar_key:'05_anna'}})).status,200);
+ assert.equal((await request('/api/profile/avatar',{method:'POST',data:{actor:'person2',avatar_key:'06_elsa'}})).status,200);
  const after=(await request('/api/pool')).data;
- assert.equal(after.people.find(person=>person.id==='ivan').avatar_key,null);
- assert.equal(Object.hasOwn((await request('/api/export')).data,'profileSelections'),false);
- assert.equal(after.coop.badges.find(badge=>badge.id==='secret_same_film').earned,false);
+ assert.equal(after.people.find(person=>person.id==='ivan').avatar_key,'05_anna');
+ assert.equal(after.people.find(person=>person.id==='person2').avatar_key,'06_elsa');
+ assert.equal(after.coop.badges.find(badge=>badge.id==='secret_same_film').earned,true);
+ assert.equal((await request('/api/export')).data.profileSelections.length,2);
 });

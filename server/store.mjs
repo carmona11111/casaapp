@@ -30,7 +30,6 @@ export function openStore(path) {
  db.exec(readFileSync(new URL('./migrations/015_delivery_orders.sql',import.meta.url),'utf8'));
  db.exec(readFileSync(new URL('./migrations/016_task_points.sql',import.meta.url),'utf8'));
  db.exec(readFileSync(new URL('./migrations/017_profile_avatars.sql',import.meta.url),'utf8'));
- db.exec('DELETE FROM profile_avatars');
  if(!db.prepare("SELECT sql FROM sqlite_master WHERE name='task_pools'").get().sql.includes("'monthly'")){
   db.exec("BEGIN; CREATE TABLE task_pools_next (template_id TEXT PRIMARY KEY REFERENCES templates(id), pool TEXT NOT NULL CHECK(pool IN ('daily','every3','weekly','occasional','monthly'))); INSERT INTO task_pools_next SELECT * FROM task_pools; DROP TABLE task_pools; ALTER TABLE task_pools_next RENAME TO task_pools; COMMIT;");
  }
