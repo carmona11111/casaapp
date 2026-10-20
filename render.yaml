@@ -4,6 +4,8 @@ services:
     name: casaapp
     runtime: node
     plan: starter
+    branch: main
+    autoDeployTrigger: commit
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
