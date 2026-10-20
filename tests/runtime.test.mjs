@@ -1,8 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,writeFileSync,rmSync,existsSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,rmSync,existsSync,mkdirSync,copyFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {runtimeConfig} from '../server/runtime.mjs';
 import {openStore} from '../server/store.mjs';
 
@@ -40,4 +41,17 @@ test('Un error de ruta no crea otra base de datos',()=>{
   });
   assert.equal(existsSync(join(occupied,'casa.sqlite')),false);
  } finally {rmSync(dir,{recursive:true,force:true});}
+});
+
+test('La imagen de producción carga los retratos desde dist sin public',async()=>{
+ const root=mkdtempSync(join(tmpdir(),'casa-runtime-'));
+ try{
+  mkdirSync(join(root,'server'));
+  mkdirSync(join(root,'dist','avatars'),{recursive:true});
+  copyFileSync(new URL('../server/profile-avatars.mjs',import.meta.url),join(root,'server','profile-avatars.mjs'));
+  copyFileSync(new URL('../public/avatars/catalog.json',import.meta.url),join(root,'dist','avatars','catalog.json'));
+  assert.equal(existsSync(join(root,'public')),false);
+  const {profileAvatars}=await import(pathToFileURL(join(root,'server','profile-avatars.mjs')).href);
+  assert.equal(profileAvatars.filter(avatar=>!avatar.legacy).length,20);
+ }finally{rmSync(root,{recursive:true,force:true});}
 });

@@ -1,6 +1,11 @@
-import {readFileSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 
-const catalogue=JSON.parse(readFileSync(new URL('../public/avatars/catalog.json',import.meta.url),'utf8'));
+const source=new URL('../public/avatars/catalog.json',import.meta.url);
+const built=new URL('../dist/avatars/catalog.json',import.meta.url);
+const candidates=process.env.NODE_ENV==='production'?[built,source]:[source,built];
+const catalogueFile=candidates.find(existsSync);
+if(!catalogueFile)throw new Error('Falta el catálogo de retratos. Ejecuta npm run build.');
+const catalogue=JSON.parse(readFileSync(catalogueFile,'utf8'));
 
 // Keep older selections valid; the picker shows the twenty portraits from perfil.zip.
 const previous=[
