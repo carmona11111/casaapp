@@ -10,3 +10,5 @@ public/CasaApp.txt
 test-results/
 playwright-report/
 *.log
+/public/avatars/*.jpg
+/public/avatars/*.png
