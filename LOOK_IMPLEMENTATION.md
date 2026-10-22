@@ -14,7 +14,7 @@ La app usa los fondos limpios `00_background.png` del nuevo kit, guardados en `p
 | Misiones y premios | S13 y S14 |
 | Organización | S16 |
 
-S03 se conserva como recurso para futuras vistas del proyecto. Inicio usa S01 porque su fuente y callejón simétrico permiten centrar el castillo grande. El mapa de estancias filtra las tareas reales por zona y frecuencia. Misiones y Premios tienen vistas independientes.
+Inicio usa S01 porque su fuente y callejón simétrico permiten centrar el castillo grande. El mapa filtra las tareas reales por zona y frecuencia. Misiones y Premios tienen vistas independientes. Las escenas que no se muestran en la app no se incluyen en `public`.
 
 No se añadieron tablas: el rediseño usa el estado ya persistido en SQLite para tareas, recetas, comidas, compra, ingresos, gastos, ahorro, misiones, llaves y logros. Los fondos no crean datos de muestra. Todas las escrituras siguen pasando por la API existente.
 
