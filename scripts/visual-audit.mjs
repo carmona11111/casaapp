@@ -36,12 +36,20 @@ try {
    await page.screenshot({path:`${output}/${width}-${name}.png`});
    console.log(width,name,'overflow=',await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));
    if(name==='tareas'){
-    const map=page.locator('.task-room-map');
-    await map.scrollIntoViewIfNeeded();
-    await page.screenshot({path:`${output}/${width}-mapa-tareas.png`});
-    await map.locator('.task-room-map-doors button').first().click();
-    if(await map.locator('.task-room-map-doors button').first().getAttribute('aria-pressed')!=='true')throw new Error('El filtro del mapa no se activó.');
-    await map.getByRole('button',{name:'Todas las estancias'}).click();
+    if(width<701){
+     const zones=page.locator('.mobile-zone-filters');
+     await zones.getByRole('button',{name:'Baños'}).click();
+     if(await zones.getByRole('button',{name:'Baños'}).getAttribute('aria-pressed')!=='true')throw new Error('El filtro de zonas no se activó.');
+     await page.screenshot({path:`${output}/${width}-mapa-tareas.png`});
+     await zones.getByRole('button',{name:'Todas'}).click();
+    }else{
+     const map=page.locator('.task-room-map');
+     await map.scrollIntoViewIfNeeded();
+     await page.screenshot({path:`${output}/${width}-mapa-tareas.png`});
+     await map.locator('.task-room-map-doors button').first().click();
+     if(await map.locator('.task-room-map-doors button').first().getAttribute('aria-pressed')!=='true')throw new Error('El filtro del mapa no se activó.');
+     await map.getByRole('button',{name:'Todas las zonas'}).click();
+    }
    }
    if(name==='comidas'){
     for(const [index,label] of [[1,'recetario'],[2,'compra']]){

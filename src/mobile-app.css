@@ -1,0 +1,120 @@
+/* Compact navigation and readable content for phone screens. */
+.menu-close,.mobile-zone-filters{display:none}
+
+@media(max-width:700px){
+ :root{font-size:14px}
+ body{background:#f3f5f7}
+ .app-shell{min-height:100dvh;background:#f3f5f7}
+ .workspace,.app-shell:not(.scene-home) .workspace{min-height:100dvh;background:#f3f5f7}
+ .workspace::before,.workspace::after{display:none}
+ .workspace{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
+ .topbar,.scene-home .topbar{position:sticky;top:0;z-index:15;display:flex;height:54px;padding:0 16px;background:#fff;border:0;border-bottom:1px solid #e4e9ed;box-shadow:none;color:#183047}
+ .app-shell .workspace .topbar{background:#fff;color:#183047;backdrop-filter:none}
+ .scene-home .topbar{display:none}
+ .topbar .mobile-menu{display:grid;place-items:center;color:#173952}
+ .breadcrumb{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:transparent;font-size:0}
+ .breadcrumb>span{display:none}
+ .breadcrumb strong{color:#173952;font-size:16px;font-weight:800}
+ .app-shell .workspace .breadcrumb strong{color:#173952}
+ .sync-status{margin-left:auto}
+ .sync-status .small-dot{width:9px;height:9px;background:#4eac76}
+ .app-shell:not(.scene-home) main.pool-main{max-width:650px;margin:0 auto;padding:16px 16px 24px;background:transparent}
+ .scene-home main.pool-main{max-width:650px;margin:0 auto;padding:0 16px 24px;background:transparent}
+ .mobile-dock{grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;min-height:64px;padding:5px 5px max(5px,env(safe-area-inset-bottom));border-top:1px solid #dfe6eb;background:#fff;box-shadow:0 -5px 18px #0f2b4114}
+ .mobile-dock button{min-height:52px;gap:2px;border-radius:10px;color:#647482;font-size:10px;font-weight:700}
+ .mobile-dock button svg{width:20px;height:20px;color:currentColor}
+ .mobile-dock button.active{background:#e8f1f8;color:#16496e;box-shadow:none}
+ .mobile-dock button:focus-visible{outline-offset:-2px}
+ .menu-scrim{z-index:29;background:#10263a80}
+ .sidebar{inset:auto 0 0;z-index:30;width:100%;height:min(80dvh,690px);padding:17px 18px max(22px,env(safe-area-inset-bottom));transform:translateY(105%);border:0;border-radius:22px 22px 0 0;background:#fff;color:#173047;box-shadow:0 -18px 48px #10263a45;overflow-y:auto}
+ .sidebar.is-open{transform:translateY(0)}
+ .sidebar::before,.sidebar .home-label,.sidebar-note,.motion-setting{display:none}
+ .sidebar .brand{justify-content:flex-start;margin:0 44px 15px 0;padding:0 0 13px;border-bottom:1px solid #e5eaed;color:#173047;font-size:19px;text-shadow:none}
+ .sidebar .brand-icon{width:38px;height:38px;color:#17618b;border-color:#dbe7ef;background:#eaf3f7}
+ .sidebar .brand span:not(.brand-icon){color:#607382;font-size:8px}
+ .menu-close{position:absolute;top:17px;right:18px;display:grid;place-items:center;width:38px;height:38px;min-height:38px;border-radius:11px;background:#edf2f5;color:#173952}
+ .sidebar nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .sidebar nav>button{display:flex;gap:9px;min-height:57px;padding:9px 10px;border:1px solid #e1e8ed;border-radius:12px;background:#f7f9fa;color:#253d50;font-size:12px;font-weight:700}
+ .sidebar nav>button svg{flex:0 0 auto;width:18px;height:18px;color:#316e97}
+ .sidebar nav>button.active{border-color:#98c2dc;background:#e9f4fb;color:#16486c;box-shadow:none}
+ .sidebar nav>button.active::before{content:none}
+ .sidebar .nav-count{margin-left:auto;padding:2px 6px;background:#dcecf6;color:#16486c;font-size:10px}
+ .sidebar-profiles{grid-column:1/-1;margin:5px 0 0;padding:11px;border:1px solid #e0e8ed;border-radius:13px;background:#f7f9fa}
+ .sidebar-profiles>small{color:#536c7d}
+ .sidebar-profiles button{background:#fff;color:#173952;border-color:#d6e2e9}
+ .sidebar-profiles button>span:last-child{color:#173952}
+ .sidebar-profiles button.selected{border-color:#4a92ba;box-shadow:inset 0 0 0 1px #4a92ba}
+ .sidebar-help{margin-top:12px;border:1px solid #dce6ec;background:#f4f8fa;color:#234a64}
+ .profile-switch{margin-top:10px;color:#234a64;border-top-color:#e0e8ed}
+ .profile-switch small{color:#607382}
+ .mobile-home{padding:24px 0 10px;color:#173047}
+ .mobile-home-head{display:flex;align-items:flex-start;justify-content:space-between;gap:9px;margin-bottom:24px}
+ .mobile-home-date{color:#557386;font-size:11px;font-weight:800;text-transform:capitalize}
+ .mobile-home h1{margin:6px 0 3px;color:#142f45;font:750 clamp(30px,9vw,39px)/1.05 'Avenir Next','Segoe UI',sans-serif}
+ .mobile-home-head p{margin:0;color:#617382;font-size:12px;line-height:1.35}
+ .mobile-home-level{display:flex;align-items:center;gap:4px;flex:0 0 auto;margin-top:3px;padding:8px 9px;border-radius:999px;background:#e6f2f7;color:#185375;font-size:11px;font-weight:800}
+ .mobile-home-section-label{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:9px}
+ .mobile-home-section-label strong{font-size:15px}.mobile-home-section-label span{color:#6a7b87;font-size:10px}
+ .mobile-home-primary{display:flex;align-items:center;gap:12px;width:100%;min-height:92px;padding:16px;border-radius:18px;background:#184b6d;color:#fff;text-align:left;box-shadow:0 8px 20px #153c5929}
+ .mobile-home-primary>.mobile-home-icon{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border-radius:13px;background:#ffffff24;color:#fff}
+ .mobile-home-primary>span:nth-child(2){display:grid;gap:4px;min-width:0;flex:1}
+ .mobile-home-primary strong{font-size:18px}.mobile-home-primary small{color:#d5e7f1;font-size:11px}
+ .mobile-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 16px}
+ .mobile-home-grid button{display:grid;justify-items:start;align-content:start;gap:5px;min-height:110px;padding:15px;border:1px solid #e1e8ec;border-radius:17px;background:#fff;color:#194461;text-align:left;box-shadow:0 3px 12px #19374c0b}
+ .mobile-home-grid button svg{margin-bottom:3px;color:#27739c}
+ .mobile-home-grid button strong{font-size:14px}.mobile-home-grid button small{color:#657784;font-size:10px;line-height:1.25}
+ .mobile-home-progress{padding:16px;border:1px solid #e0e7eb;border-radius:17px;background:#fff}
+ .mobile-home-progress>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:9px}
+ .mobile-home-progress>div:first-child span{font-size:12px;font-weight:800}.mobile-home-progress>div:first-child strong{color:#23638b;font-size:13px}
+ .mobile-home-progress .game-progress-track{height:8px;margin:12px 0 6px;border:0;background:#e5edf2}
+ .mobile-home-progress .game-progress-track span{background:#2779a7}
+ .mobile-home-progress>small{color:#657784;font-size:10px}
+ .scene-home .home-report{margin:15px 0 0;padding:0;background:transparent}
+ .scene-home .mickey-report{border:1px solid #e0e8ed;background:#fff;box-shadow:none}
+ .app-shell:not(.scene-home) .character-banner{display:none}
+ .app-shell:not(.scene-home) .guide-feedback{display:none}
+ .app-shell:not(.scene-home) .page-heading{margin:10px 0 14px;padding:0;background:none;border:0;box-shadow:none}
+ .app-shell:not(.scene-home) .page-heading h1{font-size:25px}
+ .app-shell:not(.scene-home) .page-heading p{font-size:11px}
+ .scene-pools main.pool-main{display:flex;flex-direction:column}
+ .scene-pools .moment-strip{order:1;margin:0 0 14px;padding:0;box-shadow:none}
+ .scene-pools .my-claims{order:2}
+ .scene-pools .task-pools-section{order:3}
+ .scene-pools .tasks-create{order:4;justify-content:flex-start;margin:12px 0}
+ .scene-pools .pool-editor{order:5}.scene-pools .task-manager{order:6}
+ .scene-pools .task-room-map{display:none}
+ .mobile-zone-filters{display:flex;gap:7px;overflow-x:auto;margin:0 -16px 10px;padding:0 16px 8px;scrollbar-width:none}
+ .mobile-zone-filters button{flex:0 0 auto;min-height:37px;padding:7px 12px;border:1px solid #d9e3e8;border-radius:999px;background:#fff;color:#345365;font-size:11px;font-weight:750}
+ .mobile-zone-filters button.selected{border-color:#1e648f;background:#1e648f;color:#fff}
+ .scene-pools .pool-tabs{gap:7px;margin:0 -16px 13px;padding:0 16px 9px}
+ .scene-pools .pool-tabs button{flex:0 0 auto;min-height:49px;padding:8px 12px;border:1px solid #d9e3e8;border-radius:12px;background:#fff;color:#21465e;box-shadow:none}
+ .scene-pools .pool-tabs button.selected{background:#184b6d;color:#fff;border-color:#184b6d}
+ .scene-pools .pool-heading{display:none}
+ .scene-pools .pool-heading h2{font-size:19px}.scene-pools .pool-heading p{font-size:11px}
+ .scene-pools .pool-grid{display:grid;grid-template-columns:1fr;gap:9px;overflow:visible;margin:0;padding:0 0 10px}
+ .scene-pools .pool-task{flex:auto;min-height:0;margin:0;padding:13px;border:1px solid #e1e8ec;border-radius:15px;background:#fff;box-shadow:0 3px 12px #19374c0a}
+ .scene-pools .pool-task h3{font-size:15px;line-height:1.25}
+ .scene-pools .pool-section-heading{margin:0 0 11px}.scene-pools .pool-section-heading h2{font-size:20px}
+ .scene-pools .pool-task-foot{margin-top:9px}
+ .scene-pools .tasks-create button{flex:1;min-width:0;justify-content:center;min-height:43px;font-size:12px}
+ .scene-meals .meals-page{display:flex;flex-direction:column}
+ .scene-meals .meals-heading{justify-content:flex-end;margin:0 0 8px}
+ .scene-meals .meals-heading>div{display:none}
+ .scene-meals .meals-heading .primary{min-height:40px;padding:8px 12px;font-size:11px}
+ .scene-meals .no-delivery-card{order:2;margin-top:14px}
+ .scene-meals .meals-nav{position:sticky;top:54px;z-index:12;gap:6px;margin:0 0 14px;padding:8px 0;background:#f3f5f7;box-shadow:none}
+ .scene-meals .meals-nav button{min-height:49px;padding:6px 4px;border:1px solid #d9e3e8;border-radius:10px;background:#fff;color:#21465e;box-shadow:none;font-size:10px}
+ .scene-meals .meals-nav button.selected{background:#184b6d;color:#fff;border-color:#184b6d}
+ .scene-meals .meals-nav button svg{width:16px;height:16px}
+ .scene-meals .meals-section-heading{margin-top:0}
+ .scene-meals .meals-week-grid{margin:0 -16px 12px;padding:0 16px 10px}
+ .scene-meals .meals-day{flex-basis:min(82vw,340px)}
+ .scene-savings .savings-page>.guide-feedback{display:none}
+ .scene-settings .settings-section-menu{gap:8px}
+ .scene-settings .settings-section-menu button{min-height:74px;padding:10px;border:1px solid #e0e7eb;border-radius:13px;background:#fff;box-shadow:none}
+ .scene-settings .settings-menu-icon{width:43px;height:43px;background:#e5f1f8;color:#1d648e}
+ .scene-settings .settings-section-menu strong{font-size:15px}
+ .scene-settings .settings-section-menu small{font-size:10px}
+ .scene-settings .settings-welcome{padding:14px;border:1px solid #e0e7eb;background:#fff}
+ .app-shell button{touch-action:manipulation}
+}

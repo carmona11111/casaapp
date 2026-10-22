@@ -4,6 +4,7 @@ import {projectProgress,PROJECT_SIZE,steps} from './progress';
 import {dateText,plusDays} from './types';
 import type {Gamification} from './overview';
 import type {CoopState} from './coop';
+import {useEffect,useState} from 'react';
 
 const localDay=(iso:string)=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(iso));
 const money=(cents:number)=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(cents/100);
@@ -12,11 +13,25 @@ export function GameHome({name,date,totalXP,openTasks,state,coop,weekStart,onTas
  name:string;date:string;totalXP:number;openTasks:number;state:Gamification;coop?:CoopState;weekStart:string;
  onTasks:()=>void;onMeals:()=>void;onSavings:()=>void;onCoop:()=>void;onAchievements:()=>void;
 }){
+ const [mobile,setMobile]=useState(()=>window.matchMedia('(max-width:700px)').matches);
+ useEffect(()=>{const media=window.matchMedia('(max-width:700px)');const update=()=>setMobile(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
  const progress=projectProgress(totalXP);
  const weekEnd=plusDays(weekStart,6);
  const newBadges=coop?.badges.filter(badge=>badge.earned_at&&localDay(badge.earned_at)>=weekStart&&localDay(badge.earned_at)<=weekEnd)||[];
  const missions=coop?.missions.filter(mission=>mission.earned).length||0;
  const nextStage=steps[progress.stage]?.title||'Castillo completo';
+ if(mobile)return <section className="mobile-home" aria-label="Inicio de la casa">
+  <header className="mobile-home-head"><div><span className="mobile-home-date">{dateText(date,{weekday:'long',day:'numeric',month:'long'})}</span><h1>Hola, {name}</h1><p>Todo lo importante de vuestra casa, a mano.</p></div><span className="mobile-home-level"><Sparkles size={16}/>{progress.points} XP</span></header>
+  <div className="mobile-home-section-label"><strong>Para hoy</strong><span>Elegid por dónde empezar</span></div>
+  <button className="mobile-home-primary" onClick={onTasks}><span className="mobile-home-icon"><House size={25}/></span><span><strong>{openTasks?`${openTasks} tareas libres`:'Tareas al día'}</strong><small>{openTasks?'Coge una cuando te venga bien':'Ya podéis mirar las próximas'}</small></span><ArrowRight size={21}/></button>
+  <div className="mobile-home-grid">
+   <button onClick={onMeals}><UtensilsCrossed size={23}/><strong>Comidas</strong><small>{state.meals.cooked}/{state.meals.planned} cocinadas</small></button>
+   <button onClick={onSavings}><Coins size={23}/><strong>Economía</strong><small>{money(state.savings.total_cents)} ahorrados</small></button>
+   <button onClick={onCoop}><KeyRound size={23}/><strong>Misiones</strong><small>{missions}/3 esta semana</small></button>
+   <button onClick={onAchievements}><BookOpen size={23}/><strong>Logros</strong><small>Ver vuestro álbum</small></button>
+  </div>
+  <section className="mobile-home-progress" aria-label="Progreso del castillo"><div><span>Castillo compartido</span><strong>{progress.stage}/4 fases</strong></div><div className="game-progress-track" role="progressbar" aria-label="Progreso del castillo" aria-valuenow={progress.points} aria-valuemin={0} aria-valuemax={PROJECT_SIZE}><span style={{width:`${progress.percent}%`}}/></div><small>{progress.remaining} XP para {progress.next.title.toLowerCase()}</small></section>
+ </section>;
  return <div className="game-home">
   <section className="game-world" aria-label="Mapa del castillo y accesos a las estancias">
    <div className="game-world-shade" aria-hidden="true"/>

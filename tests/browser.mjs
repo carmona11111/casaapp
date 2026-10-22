@@ -35,7 +35,7 @@ try{
   const tour=page.locator('.onboarding-dialog').getByRole('button',{name:'Omitir guía'});
   if(await tour.isVisible())await tour.click();
   await dismiss(page);
-  await page.locator('.game-world-heading h1').getByText(new RegExp(`Hola, ${name}`)).waitFor();
+  await page.getByRole('heading',{name:new RegExp(`Hola, ${name}`)}).waitFor();
  }
  async function section(page,name){
   await dismiss(page);
@@ -45,9 +45,11 @@ try{
  }
  await enter(a,'ivan','Iván');
  await enter(b,'irene','Irene');
- await section(a,'Tareas');
- assert.equal(await a.locator('.task-map-hotspot').count(),4);
- for(const name of ['Habitaciones','Baños','Cocina + comedor','Salón'])assert.equal(await a.locator('.task-room-map-doors').getByText(name,{exact:true}).count(),1);
+ await a.locator('.mobile-dock').getByRole('button',{name:'Tareas'}).click();
+ assert.equal(await a.locator('.mobile-zone-filters button').count(),5);
+ await a.locator('.mobile-zone-filters').getByRole('button',{name:'Baños'}).click();
+ assert.equal(await a.locator('.mobile-zone-filters').getByRole('button',{name:'Baños'}).getAttribute('aria-pressed'),'true');
+ await a.locator('.mobile-zone-filters').getByRole('button',{name:'Todas'}).click();
  await a.getByRole('button',{name:'La cojo'}).first().click();
  await a.getByRole('button',{name:'Ya la hice'}).first().waitFor();
  await a.getByRole('button',{name:'Ya la hice'}).first().click();
