@@ -46,6 +46,8 @@ try{
  await enter(a,'ivan','Iván');
  await enter(b,'irene','Irene');
  await section(a,'Tareas');
+ assert.equal(await a.locator('.task-map-hotspot').count(),4);
+ for(const name of ['Habitaciones','Baños','Cocina + comedor','Salón'])assert.equal(await a.locator('.task-room-map-doors').getByText(name,{exact:true}).count(),1);
  await a.getByRole('button',{name:'La cojo'}).first().click();
  await a.getByRole('button',{name:'Ya la hice'}).first().waitFor();
  await a.getByRole('button',{name:'Ya la hice'}).first().click();
@@ -65,6 +67,8 @@ try{
  await a.getByRole('heading',{name:'Pasta de casa'}).waitFor();
  await a.locator('.meals-nav button').first().click();
  await a.locator('.meals-slot select').first().selectOption({label:'Pasta de casa'});
+ await a.locator('.reminder-backdrop').waitFor({state:'visible',timeout:3000}).catch(()=>{});
+ await dismiss(a);
  await a.locator('.meals-nav button').nth(2).click();
  await a.getByText('Tomate').waitFor();
  await a.getByRole('checkbox').first().click();
@@ -72,6 +76,8 @@ try{
  const meals=await a.evaluate(async()=>await (await fetch('/api/meals')).json());
  assert.equal(meals.shopping.find(item=>item.name==='Tomate')?.checked,true);
  await b.reload();
+ await b.locator('.reminder-backdrop').waitFor({state:'visible',timeout:3000}).catch(()=>{});
+ await dismiss(b);
  await b.locator('.mobile-dock').getByRole('button',{name:'Comidas'}).click();
  await b.locator('.meals-nav button').nth(2).click();
  await b.locator('.shopping-view button').nth(1).click();

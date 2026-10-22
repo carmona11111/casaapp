@@ -17,5 +17,25 @@ test('Agrupa atrasos sin inflar limpiezas; deshacer restaura ocasiones cubiertas
 test('Mover una ocasión no crea otra repetición durante el aplazamiento',t=>{const db=fixture(t);generate(db,'2026-10-12','2026-10-12');const row=db.prepare("SELECT * FROM occurrences WHERE template_id='t1'").get();action(db,row,'move',{date:'2026-10-15'});generate(db,'2026-10-12','2026-10-15');assert.equal(db.prepare("SELECT COUNT(*) AS n FROM occurrences WHERE template_id='t1'").get().n,1);});
 test('Cambiar plantilla preserva completados y snapshots históricos',t=>{const db=fixture(t);generate(db,'2026-10-12','2026-10-14');const row=db.prepare("SELECT * FROM occurrences WHERE template_id='t1' ORDER BY original_date LIMIT 1").get();action(db,row,'complete',{covered:[]});db.prepare("UPDATE templates SET title='Nuevo título',minutes=77 WHERE id='t1'").run();transaction(db,()=>refreshFuture(db,'2026-10-13'));const done=db.prepare('SELECT * FROM occurrences WHERE id=?').get(row.id);assert.equal(JSON.parse(done.snapshot).title,JSON.parse(row.snapshot).title);assert.equal(JSON.parse(db.prepare("SELECT * FROM occurrences WHERE template_id='t1' AND original_date='2026-10-13'").get().snapshot).title,'Nuevo título');});
 test('Persistencia SQL tras cerrar y volver a abrir',()=>{const dir=mkdtempSync(join(tmpdir(),'casa-persist-')),file=join(dir,'db.sqlite');let db=openStore(file);generate(db,'2026-10-12','2026-10-12');const row=db.prepare('SELECT * FROM occurrences LIMIT 1').get();action(db,row,'complete',{covered:[]});db.close();db=openStore(file);assert.equal(db.prepare('SELECT status FROM occurrences WHERE id=?').get(row.id).status,'done');db.close();rmSync(dir,{recursive:true,force:true});});
+test('La migración agrupa zonas y conserva tareas e historial',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'casa-zones-')),file=join(dir,'db.sqlite');
+ let db=openStore(file);
+ const old=['Cocina','Salón y comedor','Habitación 1','Habitación 2','Habitación 3','Baño 1','Baño 2','Toda la casa','Lavandería','Pasillo'];
+ old.slice(0,4).forEach((name,index)=>db.prepare('UPDATE zones SET name=? WHERE id=?').run(name,`z${index}`));
+ old.slice(4).forEach((name,index)=>db.prepare('INSERT INTO zones VALUES (?,?,?)').run(`z${index+4}`,'home',name));
+ db.prepare("UPDATE templates SET zone_id='z5' WHERE id='t6'").run();
+ db.prepare("UPDATE templates SET zone_id='z7' WHERE id='t20'").run();
+ generate(db,'2026-10-12','2026-10-13');
+ const done=db.prepare("SELECT * FROM occurrences WHERE template_id='t6' LIMIT 1").get();
+ action(db,done,'complete',{covered:[]});
+ db.close();
+ db=openStore(file);
+ assert.deepEqual(plan(db).zones.map(zone=>zone.name),['Cocina + comedor','Salón','Habitaciones','Baños']);
+ assert.equal(db.prepare("SELECT zone_id FROM templates WHERE id='t6'").get().zone_id,'z3');
+ assert.equal(db.prepare("SELECT zone_id FROM templates WHERE id='t20'").get().zone_id,'z2');
+ assert.equal(JSON.parse(db.prepare('SELECT snapshot FROM occurrences WHERE id=?').get(done.id).snapshot).zone,'Baño 1');
+ assert.equal(db.prepare("SELECT COUNT(*) AS n FROM occurrences WHERE status='done'").get().n,1);
+ db.close();rmSync(dir,{recursive:true,force:true});
+});
 test('La importación rechaza versiones incompatibles y ocasiones duplicadas',()=>{assert.equal(backup.safeParse({schemaVersion:2}).success,false);assert.throws(()=>checkBackup({plan:{people:[],zones:[],templates:[]},occurrences:[{id:'a'},{id:'a'}],events:[],absences:[]}));});
 test('Mover después de consultar la semana tampoco duplica las repeticiones',t=>{const db=fixture(t);generate(db,'2026-10-12','2026-10-18');const row=db.prepare("SELECT * FROM occurrences WHERE template_id='t1' AND original_date='2026-10-12'").get();const moved=action(db,row,'move',{date:'2026-10-15'});assert.equal(db.prepare("SELECT COUNT(*) AS n FROM occurrences WHERE template_id='t1' AND status='open' AND scheduled_date<='2026-10-15'").get().n,1);transaction(db,()=>refreshFuture(db,'2026-10-12'));assert.equal(db.prepare("SELECT COUNT(*) AS n FROM occurrences WHERE template_id='t1' AND status='open' AND scheduled_date<='2026-10-15'").get().n,1);action(db,moved,'move',{date:'2026-10-13'});assert.equal(db.prepare("SELECT status FROM occurrences WHERE template_id='t1' AND original_date='2026-10-14'").get().status,'open');});

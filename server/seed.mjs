@@ -1,4 +1,5 @@
 import { applyBalancedPlan } from './household-plan.mjs';
+import {houseZones,houseZoneForLegacy} from './zones.mjs';
 
 export function seed(db) {
  if (db.prepare('SELECT id FROM household').get()) return;
@@ -6,9 +7,9 @@ export function seed(db) {
  db.prepare('INSERT INTO people VALUES (?,?,?,?,?)').run('ivan','home','Iván','#386955',1);
  db.prepare('INSERT INTO people VALUES (?,?,?,?,?)').run('person2','home','Irene','#a36649',1);
  const zones = ['Cocina','Salón y comedor','Habitación 1','Habitación 2','Habitación 3','Baño 1','Baño 2','Toda la casa','Lavandería','Pasillo'];
- zones.forEach((name,i)=>db.prepare('INSERT INTO zones VALUES (?,?,?)').run('z'+i,'home',name));
+ houseZones.forEach(zone=>db.prepare('INSERT INTO zones VALUES (?,?,?)').run(zone.id,'home',zone.name));
  let n=0;
- const add=(title,zone,minutes,block,day,steps,extra={})=>db.prepare('INSERT INTO templates VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run('t'+(++n),'home',title,JSON.stringify(steps), 'z'+zone,minutes,JSON.stringify(day === null ? {kind:'daily'} : {kind:'weekly',day,interval:1,offset:0,...extra.recurrence}),block,null,'2026-10-12',extra.pet ? 0:1,extra.pet ? 1:0);
+ const add=(title,zone,minutes,block,day,steps,extra={})=>{const recurrence=day===null?{kind:'daily'}:{kind:'weekly',day,interval:1,offset:0,...extra.recurrence};if(recurrence.zoneRotation)recurrence.zoneRotation=[...new Set(recurrence.zoneRotation.map(id=>houseZoneForLegacy(id,title)))];return db.prepare('INSERT INTO templates VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run('t'+(++n),'home',title,JSON.stringify(steps),houseZoneForLegacy('z'+zone,title),minutes,JSON.stringify(recurrence),block,null,'2026-10-12',extra.pet ? 0:1,extra.pet ? 1:0);};
  add('Gestionar platos o lavavajillas',0,10,'A',null,['Recoger los platos.','Lavar a mano o cargar el lavavajillas.','Guardar los utensilios limpios.']);
  add('Limpiar encimera y repasar placa',0,5,'A',null,['Retirar migas y restos.','Pasar una bayeta por la encimera y la placa fría.']);
  add('Recoger salón y objetos fuera de sitio',1,8,'B',null,['Devolver cada objeto a su sitio.','Ordenar cojines y mantas.']);

@@ -26,10 +26,10 @@
 .task-room-map::before,.task-room-map::after{content:none}
 .task-house-plan{position:relative;align-self:center;min-width:0;aspect-ratio:3/2;background:#142c45;border-radius:15px;overflow:hidden;box-shadow:inset 0 0 0 1px #c69a5f,0 8px 20px #0a1b3060}
 .task-house-plan>img{display:block;width:100%;height:100%;object-fit:contain}
-.task-map-hotspot{position:absolute;z-index:1;display:grid;place-items:center;padding:2px;border:2px solid transparent;border-radius:10px;background:transparent;color:transparent;cursor:pointer}
+.task-map-hotspot{position:absolute;z-index:1;display:grid;place-items:center;padding:2px;border:2px solid #fff5df8a;border-radius:10px;background:#fff4db16;color:#1b3552;cursor:pointer}
 .task-map-hotspot[title='Toda la casa']{z-index:0}
 .task-map-hotspot:hover,.task-map-hotspot:focus-visible,.task-map-hotspot.selected{border-color:#ffe29c;background:#ffd36557;color:#1b3552;box-shadow:inset 0 0 24px #ffdc79a3,0 0 14px #ffe092}
-.task-map-hotspot span{padding:4px 7px;border-radius:7px;background:#fff5dcef;font-size:11px;font-weight:900;text-align:center;opacity:0}
+.task-map-hotspot span{padding:4px 7px;border-radius:7px;background:#fff5dcef;font-size:11px;font-weight:900;text-align:center;opacity:1}
 .task-map-hotspot:hover span,.task-map-hotspot:focus-visible span,.task-map-hotspot.selected span{opacity:1}
 .task-house-plan.has-selection .task-map-hotspot:not(.selected){opacity:.55}
 .task-room-filter{min-width:0;display:flex;flex-direction:column;gap:10px}

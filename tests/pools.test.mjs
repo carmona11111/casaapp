@@ -33,15 +33,15 @@ test('Las tareas empiezan libres y sin asignación; solo quien las coge puede co
  assert.throws(()=>poolAction(db,{template_id:task.id,actor:'ivan',action:'claim'},today),/ya se hizo/);
  assert.equal(poolState(db,'2026-10-20').tasks.find(t=>t.id===task.id).available,true);
 });
-test('Las tareas de tareas1 se ofrecen libres por habitación y no se duplican al reiniciar',()=>{
+test('Las tareas de tareas1 se ofrecen libres por zona y no se duplican al reiniciar',()=>{
  const path=join(directory,'catalog.sqlite');
  let catalogueDb=openStore(path);
  const catalogue=poolState(catalogueDb,'2026-10-20').tasks.filter(task=>task.id.startsWith('tareas1-'));
  assert.equal(catalogue.length,48);
- assert.equal(new Set(catalogue.map(task=>task.zone_id)).size,10);
+ assert.equal(new Set(catalogue.map(task=>task.zone_id)).size,4);
  assert.ok(catalogue.every(task=>task.active===1&&task.claimed_by===null&&task.available));
- assert.equal(catalogue.find(task=>task.id==='tareas1-01-1').zone,'Habitación 1');
- assert.equal(catalogue.find(task=>task.id==='tareas1-11-2').zone,'Baño 2');
+ assert.equal(catalogue.find(task=>task.id==='tareas1-01-1').zone,'Habitaciones');
+ assert.equal(catalogue.find(task=>task.id==='tareas1-11-2').zone,'Baños');
  catalogueDb.prepare('UPDATE templates SET active=0 WHERE id=?').run('tareas1-01-1');
  catalogueDb.close();
  catalogueDb=openStore(path);
@@ -50,10 +50,12 @@ test('Las tareas de tareas1 se ofrecen libres por habitación y no se duplican a
  assert.equal(after.find(task=>task.id==='tareas1-01-1').active,0);
  catalogueDb.close();
 });
-test('Las tareas nuevas tienen habitación, XP propios y la compra conserva responsable',()=>{
- const tasks=poolState(db,'2026-10-19').tasks;
+test('Las tareas nuevas tienen zona, XP propios y la compra conserva responsable',()=>{
+ const state=poolState(db,'2026-10-19');
+ assert.deepEqual(state.zones.map(zone=>zone.name),['Cocina + comedor','Salón','Habitaciones','Baños']);
+ const tasks=state.tasks;
  const litter=tasks.find(t=>t.id==='default-litter-clean');
- assert.equal(litter.zone,'Salón y comedor');
+ assert.equal(litter.zone,'Salón');
  assert.equal(litter.pool,'every3');
  assert.equal(litter.points,10);
  assert.equal(available({pool:'monthly'},{local_date:'2026-10-31'},'2026-11-01'),true);

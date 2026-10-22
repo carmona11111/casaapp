@@ -3,6 +3,7 @@ import { readFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { seed } from './seed.mjs';
+import {houseZoneForLegacy,migrateDefaultZones} from './zones.mjs';
 import { addDays, matches, mod, responsible, weekOffset } from './dates.mjs';
 const tareas1Catalogue=JSON.parse(readFileSync(new URL('./tareas1-catalog.json',import.meta.url),'utf8'));
 export function openStore(path) {
@@ -34,16 +35,16 @@ export function openStore(path) {
  if(!db.prepare("SELECT sql FROM sqlite_master WHERE name='task_pools'").get().sql.includes("'monthly'")){
   db.exec("BEGIN; CREATE TABLE task_pools_next (template_id TEXT PRIMARY KEY REFERENCES templates(id), pool TEXT NOT NULL CHECK(pool IN ('daily','every3','weekly','occasional','monthly'))); INSERT INTO task_pools_next SELECT * FROM task_pools; DROP TABLE task_pools; ALTER TABLE task_pools_next RENAME TO task_pools; COMMIT;");
  }
- transaction(db,()=>{seed(db);ensureRequestedTasks(db);ensureTareas1Tasks(db);}); return db;
+ transaction(db,()=>{seed(db);migrateDefaultZones(db);ensureRequestedTasks(db);ensureTareas1Tasks(db);}); return db;
 }
 export const SHOPPING_TASK_ID='default-shopping-task';
 function ensureRequestedTasks(db){
  const defaults=[
   ['default-litter-clean','Limpiar arenero','z1',8,'every3',10,['Retirar residuos y limpiar el arenero.','Reponer arena si hace falta.']],
   ['default-litter-bag','Cambiar bolsa arenero salón','z1',12,'weekly',10,['Cambiar la bolsa del arenero del salón.']],
-  ['default-refeal','Refeal','z7',15,'monthly',10,[]],
-  ['default-cardboard-paper','Pillar cartón y papel','z7',12,'weekly',10,[]],
-  ['default-tobacco','Pillar tabaco','z7',8,'every3',5,[]],
+  ['default-refeal','Refeal','z1',15,'monthly',10,[]],
+  ['default-cardboard-paper','Pillar cartón y papel','z1',12,'weekly',10,[]],
+  ['default-tobacco','Pillar tabaco','z1',8,'every3',5,[]],
   [SHOPPING_TASK_ID,'Hacer compra','z0',30,'weekly',20,['Consultar la lista de compra pendiente.','Marcar los productos que se hayan comprado.']]
  ];
  const add=db.prepare('INSERT INTO templates VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
@@ -64,7 +65,7 @@ function ensureTareas1Tasks(db){
  for(const task of tareas1Catalogue){
   if(!findId.get(task.id)){
    if(findTitle.get(task.title))continue;
-   add.run(task.id,'home',task.title,JSON.stringify(task.steps),task.zone,task.minutes,JSON.stringify({kind:'weekly',day:0,interval:52,offset:0}),'A',null,'2100-01-01',1,Number(task.pet));
+   add.run(task.id,'home',task.title,JSON.stringify(task.steps),houseZoneForLegacy(task.zone,task.title),task.minutes,JSON.stringify({kind:'weekly',day:0,interval:52,offset:0}),'A',null,'2100-01-01',1,Number(task.pet));
   }
   addPool.run(task.id,task.pool);
  }

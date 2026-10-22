@@ -31,7 +31,7 @@ export function applyBalancedPlan(db, effectiveDate = '2026-10-12') {
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).run(
     't34', 'home', 'Barrer y fregar comedor y pasillo',
     JSON.stringify(['Despejar comedor y pasillo.', 'Barrer o aspirar ambas zonas.', 'Fregar el suelo y dejar secar.']),
-    'z9', 10, JSON.stringify({kind: 'weekly', day: 5, interval: 1, offset: 0}),
+    'z1', 10, JSON.stringify({kind: 'weekly', day: 5, interval: 1, offset: 0}),
     'B', 'person2', effectiveDate, 1, 0,
   );
 }
